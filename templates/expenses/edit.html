@@ -1,0 +1,31 @@
+
+{% load common %}
+{% load expense %}
+
+<div id="update" class="form" data-role="page">
+	<div data-role="header">
+		<a href="#" data-direction="reverse" data-rel="back" data-icon="delete">Cancel</a>
+		<a href="#" data-rel="delete" id="deleteExpense" data-icon="delete" data-theme="f" class="ui-btn-right">Delete</a>
+		<h1>Update Expense</h1>
+	</div>
+
+	<div data-role="content">
+		<form name="update" id="updateExpense" method="post" action="{% url update_expense_url expense.id %}">
+			{% csrf_token %}
+			<input type="hidden" name="id" value="{{ expense.id }}"/>
+			<ul data-role="listview" data-inset="true">
+				<li>
+					<input type="text" name="description" class="required" placeholder="Item Description" id="desc" value="{{ expense.description }}"/>
+				</li>
+				<li>
+					<input type="number" name="amount" placeholder="$0.00" class="required number" id="amount" step="0.01" value="{{ expense.amount|format_amount:0 }}"/>
+				</li>
+				<li>
+					<input type="checkbox" name="deposit" {{ expense.amount|set_checked_if_deposit }}/>
+					<label>Deposit?</label>
+				</li>
+			</ul>
+			<button type="submit" data-rel="save" id="save" data-theme="b">Update Expense</button>
+		</form>
+	</div>
+</div>
