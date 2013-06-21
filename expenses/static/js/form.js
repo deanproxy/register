@@ -1,6 +1,6 @@
 (function($) {
 
-	$('.form').live('pageshow', function(event) {
+	$('body').on('pageshow', '.form', function(event) {
 		$('form').validate({
 			submitHandler: function(form) {
 				$.mobile.showPageLoadingMsg();

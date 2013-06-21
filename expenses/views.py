@@ -1,14 +1,68 @@
 import logging
 import json
+import datetime
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 from expenses.forms import ExpenseForm
 from expenses.models import Expense, Balance
+from django.core import serializers
+from django.db.models.query import QuerySet
 
 MAX_RETURNED_EXPENSES = 30
 
+def _serialize(model):
+	obj = {}
+	field_names = model._meta.get_all_field_names()
+	for i in field_names:
+		item = getattr(model, i)
+		if type(item) == datetime.datetime:
+			obj[i] = item.isoformat('T')
+		else:
+			obj[i] = item
+	return obj
+
+def serialize(models):
+	obj = None
+	if type(models) == QuerySet:
+		obj = []
+		for model in models:
+			obj.append(_serialize(model))
+	else:
+		obj = _serialize(models)
+
+	return obj
+
 def index(request):
 	return render(request, 'index.html')
+
+def expense(request, id=0):
+	""" Get or Create an expense """
+
+	status = 200
+	expense = None
+	import pdb; pdb.set_trace()
+	if request.method == 'POST':
+		data = json.loads(request.body)
+		expense = Expense(created_at=data['created_at'], description=data['description'], amount=data['amount'])
+		expense.save()
+		try:
+			balance = Balance.objects.get(pk=1)
+		except Balance.DoesNotExist:
+			# We're just now starting the app or something happened to the db, create the expense record.
+			balance = Balance.objects.create(amount=0.0)
+
+		balance.amount += expense.amount
+		balance.save()
+		# TODO: Need to return errors if they exist.
+	else:
+		try:
+			expense = get_object_or_404(Expense, pk=id)
+		except Expense.DoesNotExist:
+			logging.error('expense does not exist: ' + id)
+			status = 404
+
+	return HttpResponse(content=json.dumps(serialize(expense)), status=status, mimetype='application/json')
+
 
 def total(request):
 	""" Display the total """
@@ -31,8 +85,9 @@ def list(request):
 	remaining = total - len(expenses)
 	if remaining:
 		next_offset = MAX_RETURNED_EXPENSES
-	return HttpResponse(json.dumps({'expenses':expenses, 'total':total,
-									'remaining':remaining, 'next_offset':next_offset}), mimetype='application/json')
+
+	json_object = {'total':total, 'remaining':remaining, 'next_offset':next_offset, 'expenses': serialize(expenses))}
+	return HttpResponse(content=json.dumps(json_object), mimetype='application/json')
 
 def more(request):
 	""" sends back more expenses """
@@ -49,33 +104,6 @@ def more(request):
 
 	return render(request, '_list.html', {'expenses':expenses, 'total':total,
 												   'remaining':remaining, 'next_offset':next_offset})
-
-def new(request):
-	return render(request, 'new.html')
-
-def create(request):
-	""" Create an expense. Update the current Balance. """
-
-	status = 201
-	form = ExpenseForm(request.POST)
-	if form.is_valid():
-		expense = form.save()
-		try:
-			balance = Balance.objects.get(pk=1)
-		except Balance.DoesNotExist:
-			# We're just now starting the app or something happened to the db, create the expense record.
-			balance = Balance.objects.create(amount=0.0)
-
-		balance.amount += expense.amount
-		balance.save()
-	else:
-		status = 500
-		logging.error(form.errors)
-	return HttpResponse(status=status)
-
-def edit(request, id):
-	expense = get_object_or_404(Expense, pk=id)
-	return render(request, 'edit.html', {'expense':expense})
 
 def update(request, id):
 	status = 201
