@@ -1,4 +1,8 @@
-(function($) {
+(function(ex, $) {
+
+	ex.amountType = function(amount) {
+		return amount >= 0.0 ? 'positive' : 'negative';
+	}
 
 	function loadMoreClickHandler() {
 		$('#loadMore a').click(function() {
@@ -42,7 +46,7 @@
 	// 	loadMoreClickHandler();
 	// });
 
-	window.Expense = Backbone.Model.extend({
+	ex.Expense = Backbone.Model.extend({
 		urlRoot: '/expenses/',
 		defaults: {
 			created_at: '',
@@ -56,9 +60,60 @@
 		}
 	});
 
-	window.Expenses = Backbone.Collection.extend({
-		url: '/expenses/list/',
-		model: Expense
+	ex.Total = Backbone.Model.extend({
+		urlRoot: '/expenses/total/',
+		defaults: {
+			amount: 0.0
+		}
 	});
 
-})(jQuery);
+	ex.Expenses = Backbone.Collection.extend({
+		url: '/expenses/list/',
+		model: ex.Expense
+	});
+
+	ex.MainView = Backbone.View.extend({
+		initialize: function() {
+			this.total = new ex.Total();
+			this.total.fetch();
+			this.render();
+		},
+
+		render: function() {
+			var variables = {
+				total: this.total.get('amount')
+			};
+			var template = _.template($('#home-page').html(), variables);
+			this.$el.find('ul:first').html(template);
+			return this;
+		}
+	});
+
+	ex.ExpenseList = Backbone.View.extend({
+		initialize: function() {
+			this.expenses = new ex.Expenses();
+			this.expenses.fetch();
+			this.render();
+		},
+
+		render: function() {
+			var variables = {
+				expenses: this.expenses.models
+			};
+			var template = _.template($('#list-page').html(), variables);
+			this.$el.find('ul').html(template);
+			return this;
+		}
+	});
+
+	$(document).on('pagebeforeload', function(event, data) {
+		if (data.url === '#list') {
+			new ex.ExpenseList({el: $('#list')});
+		}
+	});
+
+	$(function() {
+		var home = new ex.MainView({el: $('#home')});
+	});
+
+})(window.ex = window.ex || {}, jQuery);

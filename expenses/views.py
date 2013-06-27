@@ -67,14 +67,14 @@ def expense(request, id=0):
 def total(request):
 	""" Display the total """
 
-	json = {'amount':0.0}
+	json_obj = {'amount':0.0}
 	try:
 		balance = Balance.objects.get(pk=1)
 	except:
 		pass
 	else:
-		json['amount'] = balance.amount
-	return HttpResponse(json.dumps(json), mimetype='application/json')
+		json_obj['amount'] = balance.amount
+	return HttpResponse(json.dumps(json_obj), mimetype='application/json')
 
 def list(request):
 	""" render the list page with 30 entries """
@@ -86,7 +86,7 @@ def list(request):
 	if remaining:
 		next_offset = MAX_RETURNED_EXPENSES
 
-	json_object = {'total':total, 'remaining':remaining, 'next_offset':next_offset, 'expenses': serialize(expenses))}
+	json_object = {'total':total, 'remaining':remaining, 'next_offset':next_offset, 'expenses': serialize(expenses)}
 	return HttpResponse(content=json.dumps(json_object), mimetype='application/json')
 
 def more(request):
