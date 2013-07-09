@@ -1,6 +1,8 @@
 import logging
 import json
 import datetime
+import math
+
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 from expenses.forms import ExpenseForm
@@ -8,7 +10,7 @@ from expenses.models import Expense, Balance
 from django.core import serializers
 from django.db.models.query import QuerySet
 
-MAX_RETURNED_EXPENSES = 30
+MAX_RETURNED_EXPENSES =1 
 
 def _serialize(model):
 	obj = {}
@@ -79,31 +81,15 @@ def total(request):
 def list(request):
 	""" render the list page with 30 entries """
 
-	next_offset = 0
-	expenses = Expense.objects.all().order_by('created_at').reverse()[0:MAX_RETURNED_EXPENSES]
+	page = int(request.GET.get('page', 1)) - 1
+	offset = MAX_RETURNED_EXPENSES * int(page)
+	expenses = Expense.objects.all().order_by('created_at').reverse()[offset:(offset+MAX_RETURNED_EXPENSES)]
 	total = Expense.objects.count()
-	remaining = total - len(expenses)
-	if remaining:
-		next_offset = MAX_RETURNED_EXPENSES
-
-	json_object = {'total':total, 'remaining':remaining, 'next_offset':next_offset, 'expenses': serialize(expenses)}
-	return HttpResponse(content=json.dumps(json_object), mimetype='application/json')
-
-def more(request):
-	""" sends back more expenses """
-
-	next_offset = 0
-	offset = int(request.GET['offset']) or 0
-	total = Expense.objects.count()
-
-	# REMEMBER: The way the slice works on a QuerySet is [start_pos:end_pos]
-	expenses = Expense.objects.all().order_by('created_at').reverse()[offset:MAX_RETURNED_EXPENSES + offset]
 	remaining = total - (offset + len(expenses))
-	if remaining:
-		next_offset = MAX_RETURNED_EXPENSES + offset
+	pages = math.ceil(float(total) / float(MAX_RETURNED_EXPENSES))
 
-	return render(request, '_list.html', {'expenses':expenses, 'total':total,
-												   'remaining':remaining, 'next_offset':next_offset})
+	json_object = {'total':total, 'remaining':remaining, 'pages':pages, 'expenses': serialize(expenses)}
+	return HttpResponse(content=json.dumps(json_object), mimetype='application/json')
 
 def update(request, id):
 	status = 201

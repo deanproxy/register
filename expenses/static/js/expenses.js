@@ -4,6 +4,19 @@
 		return amount >= 0.0 ? 'positive' : 'negative';
 	}
 
+	var lastDate = '';
+	ex.dateDivider = function(date) {
+		var date = new Date(Date.parse(date));
+		var datestr = date.getMonth() + '/' + date.getDay() + '/' + (date.getYear()+1900);
+		var html = '';
+		if (lastDate !== datestr) {
+			html = '<li data-role="list-divider">' + datestr + '</li>';
+			lastDate = datestr;
+		}
+		return html;
+	}
+
+
 	function loadMoreClickHandler() {
 		$('#loadMore a').click(function() {
 			$.mobile.showPageLoadingMsg();
@@ -42,10 +55,6 @@
         return Backbone._sync(method, model, options);
     };
 
-	// $('#expenses').live('pageshow', function() {
-	// 	loadMoreClickHandler();
-	// });
-
 	ex.Expense = Backbone.Model.extend({
 		urlRoot: '/expenses/',
 		defaults: {
@@ -68,40 +77,116 @@
 	});
 
 	ex.Expenses = Backbone.Collection.extend({
-		url: '/expenses/list/',
-		model: ex.Expense
+		url: function() {
+			return '/expenses/list/' + '?' + $.param({page: this.page});
+		},
+
+		initialize: function() {
+			this.page = 1;
+		},
+
+		fetch: function(options) {
+			options || (options = {});
+			this.trigger('fetching');
+			var self = this;
+			var success = options.success;
+			options.success = function(resp) {
+				self.trigger('fetched');
+				if (success) {
+					success(self, resp);
+				}
+			};
+			Backbone.Collection.prototype.fetch.call(this, options);
+		},
+
+		parse: function(resp) {
+			this.total = resp.total;
+			this.remaining = resp.remaining;
+			this.pages = resp.pages;
+			return resp.expenses;
+		},
+
+		nextPage: function(options) {
+			if (this.page+1 <= this.pages) {
+				this.page = this.page + 1;
+				this.fetch(options);
+			}
+		},
+
+		prevPage: function(options) {
+			if (this.page-1 >= 1) {
+				this.page = this.page - 1;
+				this.fetch(options);
+			}
+		}
+	});
+
+	ex.AddView = Backbone.View.extend({
+		expense: undefined,
+
+		render: function() {
+			var variables = {
+				expense: this.expense
+			};
+			var template = _.template($('#add-page').html(), variables);
+			this.$el.find('form').html(template);
+		}
 	});
 
 	ex.MainView = Backbone.View.extend({
 		initialize: function() {
-			this.total = new ex.Total();
-			this.total.fetch();
-			this.render();
-		},
-
-		render: function() {
-			var variables = {
-				total: this.total.get('amount')
-			};
-			var template = _.template($('#home-page').html(), variables);
-			this.$el.find('ul:first').html(template);
-			return this;
-		}
-	});
-
-	ex.ExpenseList = Backbone.View.extend({
-		initialize: function() {
 			this.expenses = new ex.Expenses();
-			this.expenses.fetch();
+			this.total = new ex.Total();
 			this.render();
 		},
 
+		moreExpenses: function() {
+			var self = this;
+			this.expenses.nextPage({
+				success: function() {
+					$('#load-more').remove();
+					var variables = {
+						'expenses': self.expenses
+					}
+					var template = _.template($('#list-page').html(), variables);
+					self.$el.find('#expense-list').append(template);
+					$('#expense-list').listview('refresh');
+					$(document).on('click', '#more-expenses', function() {
+						self.moreExpenses();
+					});
+				}
+			});
+		},
+
 		render: function() {
-			var variables = {
-				expenses: this.expenses.models
-			};
-			var template = _.template($('#list-page').html(), variables);
-			this.$el.find('ul').html(template);
+			var self = this;
+			this.expenses.fetch({
+				success: function() {
+					var variables = {
+						'expenses': self.expenses
+					};
+					var template = _.template($('#list-page').html(), variables);
+					self.$el.find('#expense-list').html(template);
+					$('#expense-list').listview('refresh');
+					$(document).on('click', '.update-expense', function() {
+						var index = $(this).attr('data-expense-index');
+						var view = new ex.AddView({el: $('#update')});
+						view.expense = self.expenses.models[index];
+						view.render();
+					});
+				}
+			});
+			this.total.fetch({
+				success: function() {
+					var variables = {
+						total: self.total.get('amount'),
+					};
+					var template = _.template($('#home-page').html(), variables);
+					self.$el.find('h1').html(template);
+					$.event.trigger('create');
+				}
+			});
+
 			return this;
 		}
 	});
@@ -114,6 +199,9 @@
 
 	$(function() {
 		var home = new ex.MainView({el: $('#home')});
+		$(document).on('click', '#more-expenses', function() {
+			home.moreExpenses();
+		});
 	});
 
 })(window.ex = window.ex || {}, jQuery);

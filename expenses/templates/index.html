@@ -31,80 +31,68 @@
 	{% csrf_token %}
 	<div id="home" data-role="page" role="main">
 		<div data-role="header">
-			<h1>Budget</h1>
+			<h1>Total:</h1>
+			<a href="#preferences" class="preferences" data-role="button" data-inline="true" data-transition="slideleft" data-icon="preference">Pref</a>
 			<a href="#update" class="add-expense" data-role="button" data-inlne="true" data-transition="slideup" data-icon="plus" class="ui-btn-right">Add</a>
 		</div>
-		<div data-role="index">
-			<ul id="total" data-inset="true" data-role="listview">
-			</ul>
-			<ul data-inset="true" data-role="listview">
-				<li class="arrow"><a href="#list" id="goToExpenses">Expenses</a></li>
+		<div data-role="content">
+			<ul id="expense-list" data-role="listview">
 			</ul>
 		</div>
 	</div>
 
 	<script type="text/template" id="home-page">
-		<li id="total-amount">Total <span class="ui-li-count"><%= total %></span></li>
+		Total: <span class="<%= window.ex.amountType(total) %>"><%= formatCurrency(total) %></span>
 	</script>
 
-	{# List expenses #}
-	<div data-role="list" id="list">
-		<div data-role="header">
-			<h1>Expenses</h1>
-			<a href="#home" data-icon="arrow-l" data-direction="reverse" class="ui-btn-left">Back</a>
-			<a href="#update" data-transition="slideup" data-icon="plus" class="ui-btn-right">Add</a>
-		</div>
-		<div data-role="content">
-			<ul id="expenseList" data-role="listview">
-			</ul>
-		</div>
-	</div>
-
 	<script type="text/template" id="list-page">
-		<% _.each(expenses, function(expense) { %>
-			{# {% date_divider expense.get('created_at') %} #}
+		<% _.each(expenses.models, function(expense, index) { %>
+			<%= window.ex.dateDivider(expense.get('created_at')) %>
 			<li>
-				<a href="#update" class="update-expense"><%= expense.get('description') %></a>
-				<span class="ui-li-count <%= ex.amountType(expense.get('amount')) %>">$<%= formatCurrency(expense.get('amount') %></span>
+				<a href="#update" class="update-expense" data-expense-index="<%= index %>"><%= expense.get('description') %></a>
+				<span class="ui-li-count <%= window.ex.amountType(expense.get('amount')) %>"><%= formatCurrency(expense.get('amount')) %></span>
 			</li>
-		{% comment %}
-			<li id="loadMore">
-				<a href="#" data-offset="{{ next_offset }}" id="more-expenses">
-					Loading more expenses...
-					<div>{{ remaining }} expenses remaining, {{ total }} total</div>
+		<% }) %>
+		<% if (expenses.pages > 1 && expenses.page < expenses.pages) { %>
+			<li id="load-more">
+				<a href="#" id="more-expenses">
+					Load more expenses...
+					<div><%= expenses.remaining %> expenses remaining, <%= expenses.total %> total</div>
 				</a>
 			</li>
-		{% endcomment %}
+		<% } %>
 	</script>
 
 	{# New/Edit an expense #}
-	{% comment %}
  	<div id="update" class="form" data-role="page">
 		<div data-role="header">
 			<a href="#" data-direction="reverse" data-rel="back" data-icon="delete">Cancel</a>
-			<a href="#" data-rel="delete" id="deleteExpense" data-icon="delete" data-theme="f" class="ui-btn-right">Delete</a>
-			<h1>Update Expense</h1>
+			<h1>Enter Expense</h1>
 		</div>
 
 		<div data-role="content">
-			<form name="update" id="updateExpense" method="post" action="#">
-				{% csrf_token %}
-				<ul data-role="listview" data-inset="true">
-					<li>
-						<input type="text" name="description" class="required" placeholder="Item Description" id="desc" value="{{ expense.description }}"/>
-					</li>
-					<li>
-						<input type="number" name="amount" placeholder="$0.00" class="required number" id="amount" step="0.01" value="{{ expense.amount|format_amount:0 }}"/>
-					</li>
-					<li>
-						<input type="checkbox" name="deposit" {{ expense.amount|set_checked_if_deposit }}/>
-						<label>Deposit?</label>
-					</li>
-				</ul>
-				<button type="submit" data-rel="save" id="save" data-theme="b">Update Expense</button>
+			<form name="update" id="update-expense" method="post" action="#">
 			</form>
 		</div>
 	</div>
-	{% endcomment %}
+
+	<script type="text/template" id="add-page">
+		<ul data-role="listview" data-inset="true">
+			<li>
+				<input type="text" name="description" class="required" placeholder="Item Description" id="desc" value="<%= expense ? expense.get('description') : '' %>">
+			</li>
+			<li>
+				<input type="number" name="amount" placeholder="$0.00" class="required number" id="amount" step="0.01" value="<%= expense ? expense.get('amount') : '' %>">
+			</li>
+			<li>
+				<input type="checkbox" name="deposit" <%= expense && expense.get('amount') > 0 ? 'checked' : '' %>>
+				<label class="deposit-label">Deposit?</label>
+			</li>
+		</ul>
+		<button type="submit" data-rel="save" id="save" data-theme="b"><%= expense ? 'Update Expense' : 'Add Expense' %></button>
+		<% if (expense) { %>
+			<button type="submit" data-rel="delete" id="delete" data-theme="e">Delete Expense</button>
+		<% } %>
+	</script>
 </body>
 </html>

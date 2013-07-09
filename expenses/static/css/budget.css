@@ -2,12 +2,25 @@ body {
 	background-color: #ddd;
 }
 
-ul li span.negative {
+.negative {
 	color: #ff3333;
 }
 
-ul li span.positive {
+.positive {
 	color: #009900;
+}
+
+.ui-checkbox {
+    margin: 10px 0;
+}
+.deposit-label {
+    float: right;
+    margin-top: -10px;
+}
+li:last-child:after {
+    content: " ";
+    display: block;
+    clear: both;
 }
 
 label.error {
@@ -22,16 +35,16 @@ ul li a.active {
 	background: #fff url(../images/spinner2.gif) 100% 50% no-repeat;
 }
 
-#loadMore a {
+#load-more a {
 	color: #0066ff;
 }
-#loadMore a div {
+#load-more a div {
 	font-size: 12px;
 	color: #999999;
 }
 
 /* Delete buttons */
-.deleteButton {
+.delete-button {
 	display: none;
 	border-radius: 5px;
 	float: right;
