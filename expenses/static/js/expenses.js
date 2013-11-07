@@ -1,21 +1,5 @@
 (function(ex, $) {
 
-	ex.amountType = function(amount) {
-		return amount >= 0.0 ? 'positive' : 'negative';
-	}
-
-	var lastDate = '';
-	ex.dateDivider = function(date) {
-		var date = new Date(Date.parse(date));
-		var datestr = date.getMonth() + '/' + date.getDay() + '/' + (date.getYear()+1900);
-		var html = '';
-		if (lastDate !== datestr) {
-			html = '<li data-role="list-divider">' + datestr + '</li>';
-			lastDate = datestr;
-		}
-		return html;
-	}
-
 
 	function loadMoreClickHandler() {
 		$('#loadMore a').click(function() {
@@ -61,11 +45,6 @@
 			created_at: '',
 			description: '',
 			amount: 0.0
-		},
-		initialize: function() {
-			if (!this.get('created_at')) {
-				this.set({'created_at': new Date()});
-			}
 		}
 	});
 
@@ -88,14 +67,13 @@
 		fetch: function(options) {
 			options || (options = {});
 			this.trigger('fetching');
-			var self = this;
 			var success = options.success;
-			options.success = function(resp) {
-				self.trigger('fetched');
+			options.success = $.proxy(function(resp) {
+				this.trigger('fetched');
 				if (success) {
-					success(self, resp);
+					success(this, resp);
 				}
-			};
+			}, this);
 			Backbone.Collection.prototype.fetch.call(this, options);
 		},
 
@@ -122,14 +100,16 @@
 	});
 
 	ex.AddView = Backbone.View.extend({
-		expense: undefined,
-
-		render: function() {
+		render: function(expense) {
+            if (!expense) {
+                expense = new ex.Expense().toJSON();
+            }
 			var variables = {
-				expense: this.expense
+				expense: expense
 			};
-			var template = _.template($('#add-page').html(), variables);
-			this.$el.find('form').html(template);
+			var template = Handlebars.compile($('#add-page').html());
+			this.$el.find('form').html(template(variables));
+            $.event.trigger('create');
 		}
 	});
 
@@ -137,56 +117,54 @@
 		initialize: function() {
 			this.expenses = new ex.Expenses();
 			this.total = new ex.Total();
-			this.render();
+
+            this.listenTo(this.expenses, 'sync', this.onSyncList);
+            this.listenTo(this.total, 'sync', this.onSyncTotal);
+
+            this.expenses.fetch();
+            this.total.fetch();
+
+            $('.add-expense').click($.proxy(function() {
+                var view = new ex.AddView({el: $('#update')});
+                view.render();
+                $.event.trigger('create');
+            }, this));
 		},
 
-		moreExpenses: function() {
-			var self = this;
-			this.expenses.nextPage({
-				success: function() {
-					$('#load-more').remove();
-					var variables = {
-						'expenses': self.expenses
-					}
-					var template = _.template($('#list-page').html(), variables);
-					self.$el.find('#expense-list').append(template);
-					$('#expense-list').listview('refresh');
-					$(document).on('click', '#more-expenses', function() {
-						self.moreExpenses();
-					});
-				}
-			});
-		},
+        onSyncTotal: function(data) {
+            var variables = {
+                total: data.get('amount')
+            };
+            this.renderTotal(variables);
+        },
 
-		render: function() {
-			var self = this;
-			this.expenses.fetch({
-				success: function() {
-					var variables = {
-						'expenses': self.expenses
-					};
-					var template = _.template($('#list-page').html(), variables);
-					self.$el.find('#expense-list').html(template);
-					$('#expense-list').listview('refresh');
-					$(document).on('click', '.update-expense', function() {
-						var index = $(this).attr('data-expense-index');
-						var view = new ex.AddView({el: $('#update')});
-						view.expense = self.expenses.models[index];
-						view.render();
-					});
-				}
-			});
-			this.total.fetch({
-				success: function() {
-					var variables = {
-						total: self.total.get('amount'),
-					};
-					var template = _.template($('#home-page').html(), variables);
-					self.$el.find('h1').html(template);
-					$.event.trigger('create');
-				}
-			});
+        renderTotal: function(data) {
+            var template = Handlebars.compile($('#home-page').html());
+            this.$el.find('h1').html(template(data));
+        },
 
+        onSyncList: function(data) {
+            $('#load-more').remove();
+            var variables = {
+                'model': data,
+                'expenses': data.toJSON()
+            };
+            this.renderList(variables);
+            $(document).on('click', '#more-expenses', $.proxy(function() {
+                this.expenses.nextPage();
+            }, this));
+        },
+
+		renderList: function(data) {
+            var self = this;
+            var template = Handlebars.compile($('#list-page').html());
+            this.$el.find('#expense-list').append(template(data));
+            $('#expense-list').listview('refresh');
+            $(document).on('click', '.update-expense', function() {
+                var index = $(this).attr('data-expense-index');
+                var view = new ex.AddView({el: $('#update')});
+                view.render(self.expenses.models[index].toJSON());
+            });
 			return this;
 		}
 	});
@@ -199,9 +177,6 @@
 
 	$(function() {
 		var home = new ex.MainView({el: $('#home')});
-		$(document).on('click', '#more-expenses', function() {
-			home.moreExpenses();
-		});
 	});
 
 })(window.ex = window.ex || {}, jQuery);

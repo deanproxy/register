@@ -20,15 +20,18 @@
 	{% js 'jquery.mobile-1.3.1.min.js' %}
 	{% js 'underscore-min.js' %}
 	{% js 'backbone-min.js' %}
+    {% js 'handlebars-v1.1.2.js' %}
 
 	{% js 'application.js' %}
 	{% js 'form.js' %}
 	{% js 'expenses.js' %}
+    {% js 'handlebars-helpers.js' %}
 
 </head>
 
 <body>
 	{% csrf_token %}
+    {% verbatim %}
 	<div id="home" data-role="page" role="main">
 		<div data-role="header">
 			<h1>Total:</h1>
@@ -41,29 +44,29 @@
 		</div>
 	</div>
 
-	<script type="text/template" id="home-page">
-		Total: <span class="<%= window.ex.amountType(total) %>"><%= formatCurrency(total) %></span>
+	<script type="text/x-handlebars-template" id="home-page">
+		Total: <span class="{{amountType total}}">{{formatCurrency total}}</span>
 	</script>
 
-	<script type="text/template" id="list-page">
-		<% _.each(expenses.models, function(expense, index) { %>
-			<%= window.ex.dateDivider(expense.get('created_at')) %>
+	<script type="text/x-handlebars-template" id="list-page">
+		{{#each expenses}}
+			{{dateDivider created_at}}
 			<li>
-				<a href="#update" class="update-expense" data-expense-index="<%= index %>"><%= expense.get('description') %></a>
-				<span class="ui-li-count <%= window.ex.amountType(expense.get('amount')) %>"><%= formatCurrency(expense.get('amount')) %></span>
+				<a href="#update" class="update-expense" data-expense-index="{{@index}}">{{description}}</a>
+				<span class="ui-li-count {{amountType amount}}">{{formatCurrency amount}}</span>
 			</li>
-		<% }) %>
-		<% if (expenses.pages > 1 && expenses.page < expenses.pages) { %>
-			<li id="load-more">
-				<a href="#" id="more-expenses">
-					Load more expenses...
-					<div><%= expenses.remaining %> expenses remaining, <%= expenses.total %> total</div>
-				</a>
-			</li>
-		<% } %>
+        {{/each}}
+		{{#ifPagination model}}
+            <li id="load-more">
+                <a href="#" id="more-expenses">
+                    Load more expenses...
+                    <div>{{remaining}} expenses remaining, {{total}} total</div>
+                </a>
+            </li>
+        {{/ifPagination}}
 	</script>
 
-	{# New/Edit an expense #}
+	<!-- New/Edit an expense -->
  	<div id="update" class="form" data-role="page">
 		<div data-role="header">
 			<a href="#" data-direction="reverse" data-rel="back" data-icon="delete">Cancel</a>
@@ -76,23 +79,24 @@
 		</div>
 	</div>
 
-	<script type="text/template" id="add-page">
+	<script type="text/x-handlebars-template" id="add-page">
 		<ul data-role="listview" data-inset="true">
 			<li>
-				<input type="text" name="description" class="required" placeholder="Item Description" id="desc" value="<%= expense ? expense.get('description') : '' %>">
+				<input type="text" name="description" class="required" placeholder="Item Description" id="desc" value="{{expense.description}}">
 			</li>
 			<li>
-				<input type="number" name="amount" placeholder="$0.00" class="required number" id="amount" step="0.01" value="<%= expense ? expense.get('amount') : '' %>">
+				<input type="number" name="amount" placeholder="$0.00" class="required number" id="amount" step="0.01" value="{{expense.amount}}">
 			</li>
 			<li>
-				<input type="checkbox" name="deposit" <%= expense && expense.get('amount') > 0 ? 'checked' : '' %>>
+				<input type="checkbox" name="deposit" {{#if expense.amount}}checked{{/if}}>
 				<label class="deposit-label">Deposit?</label>
 			</li>
 		</ul>
-		<button type="submit" data-rel="save" id="save" data-theme="b"><%= expense ? 'Update Expense' : 'Add Expense' %></button>
-		<% if (expense) { %>
+        <button type="submit" data-rel="save" id="save" data-theme="b">{{#if expense.created_at}}Update Expense{{else}}Add Expense{{/if}}</button>
+		{{#if expense.created_at}}
 			<button type="submit" data-rel="delete" id="delete" data-theme="e">Delete Expense</button>
-		<% } %>
+        {{/if}}
 	</script>
+    {% endverbatim %}
 </body>
 </html>
