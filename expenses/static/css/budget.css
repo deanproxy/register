@@ -3,11 +3,11 @@ body {
 }
 
 .negative {
-	color: #ff3333;
+	color: #c1272d;
 }
 
 .positive {
-	color: #009900;
+	color: #8cc63f;
 }
 
 .ui-checkbox {
@@ -25,6 +25,14 @@ li:last-child:after {
 
 label.error {
 	color: #ff3333;
+}
+.ui-slider {
+    float: left;
+}
+label.ui-slider {
+    display: inline;
+    margin-left: 20px;
+    line-height: 2.5em;
 }
 
 #home ul li a.active {

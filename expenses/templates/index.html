@@ -12,6 +12,7 @@
 
 	<title>Budget</title>
 	{% css 'jquery.mobile-1.3.2.min.css' %}
+    {% css 'themes/jquery.mobile.dean-theme.min.css' %}
 	{% css 'budget.css' %}
 
 	{% js 'jquery-1.10.1.min.js' %}
@@ -32,14 +33,14 @@
 <body>
 	{% csrf_token %}
     {% verbatim %}
-	<div id="home" data-role="page" role="main">
-		<div data-role="header">
+	<div id="home" data-role="page" role="main" data-swatch="a" data-theme="a">
+		<div data-role="header" class="ui-bar-a ui-header" data-swatch="a" data-theme="a">
 			<h1>Total:</h1>
 			<a href="#preferences" data-iconpos="notext" class="preferences ui-icon-bars ui-btn-corner-all ui-btn-up-a ui-shadow" data-icon="bars" data-role="button" data-inline="true" data-transition="slideleft">Preferences</a>
 			<a href="#update" class="add-expense" data-iconpos="notext" data-role="button" data-inlne="true" data-transition="slideup" data-icon="plus" class="ui-btn-right">Add</a>
 		</div>
 		<div data-role="content">
-			<ul id="expense-list" data-role="listview">
+			<ul id="expense-list" data-role="listview" data-count-theme="a">
 			</ul>
 		</div>
 	</div>
@@ -52,8 +53,9 @@
 		{{#each expenses}}
 			{{dateDivider created_at}}
 			<li>
-				<a href="#update" class="update-expense" data-expense-index="{{@index}}">{{description}}</a>
-				<span class="ui-li-count {{amountType amount}}">{{formatCurrency amount}}</span>
+				<a href="#update" class="update-expense" data-expense-index="{{@index}}">
+                    {{description}} <span class="ui-li-count {{amountType amount}}">{{formatCurrency amount}}</span>
+                </a>
 			</li>
         {{/each}}
 		{{#ifPagination model}}
@@ -67,9 +69,11 @@
 	</script>
 
 	<!-- New/Edit an expense -->
- 	<div id="update" class="form" data-add-back-btn="true" data-role="page">
+ 	<div id="update" class="form" data-role="page" data-theme="a">
 		<div data-role="header">
-			<h1>Enter Expense</h1>
+			<h1>Edit Expense</h1>
+            <a href="#" data-role="back" data-rel="back" data-icon="back">Cancel</a>
+            <a href="#" id="save-btn" data-role="button" data-rel="save" data-icon="check" class="ui-btn-right">Save</a>
 		</div>
 
 		<div data-role="content">
@@ -79,23 +83,31 @@
 	</div>
 
 	<script type="text/x-handlebars-template" id="add-page">
-		<ul data-role="listview" data-inset="true">
-			<li>
-				<input type="text" name="description" class="required" placeholder="Item Description" id="desc" value="{{expense.description}}">
-			</li>
-			<li>
-				<input type="number" name="amount" placeholder="$0.00" class="required number" id="amount" step="0.01" value="{{expense.amount}}">
-			</li>
-			<li>
-				<input type="checkbox" name="deposit" {{#if expense.amount}}checked{{/if}}>
-				<label class="deposit-label">Deposit?</label>
-			</li>
-		</ul>
-        <button type="submit" data-rel="save" id="save" data-theme="b">{{#if expense.created_at}}Update Expense{{else}}Add Expense{{/if}}</button>
+        <ul data-role="listview" data-inset="true">
+            <li>
+                <label for="desc" class="ui-hidden-accessible">Description:</label>
+                <input type="text" name="description" class="required" placeholder="Item Description" id="desc" value="{{expense.description}}">
+            </li>
+            <li>
+                <label for="amount" class="ui-hidden-accessible">Amount:</label>
+                <input type="number" name="amount" placeholder="$0.00" class="required number" id="amount" step="0.01" value="{{expense.amount}}">
+            </li>
+            <li>
+                <select name="deposit" id="deposit" data-role="slider" data-mini="true">
+                    <option value="off">No</option>
+                    <option value="on" {{#if expense.amount}}selected=""{{/if}}>Yes</option>
+                </select>
+                <label for="deposit">Deposit?</label>
+            </li>
+        </ul>
 		{{#if expense.created_at}}
-			<button type="submit" data-rel="delete" id="delete" data-theme="e">Delete Expense</button>
+			<button type="submit" data-rel="delete" id="delete-btn" data-theme="c">Delete Expense</button>
         {{/if}}
 	</script>
+
+    <div id="error-msg" data-role="popup">
+        An error occurred.
+    </div>
     {% endverbatim %}
 </body>
 </html>

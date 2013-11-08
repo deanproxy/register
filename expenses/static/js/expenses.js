@@ -56,6 +56,8 @@
 	});
 
 	ex.Expenses = Backbone.Collection.extend({
+        model: ex.Expense,
+
 		url: function() {
 			return '/expenses/list/' + '?' + $.param({page: this.page});
 		},
@@ -99,20 +101,84 @@
 		}
 	});
 
+    /**
+     * Handles adding and updating an expense.
+     * @type {Object|*|void|e.extend|extend|S.extend}
+     */
 	ex.AddView = Backbone.View.extend({
-		render: function(expense) {
-            if (!expense) {
-                expense = new ex.Expense().toJSON();
+        initialize: function() {
+            if (!this.options.index) {
+                this.options.index = 0;
+            } else {
+                this.expense = this.options.expenses.models[this.options.index];
+                this.listenTo(this.expense, 'destroy', this.ondestroy);
+                this.listenTo(this.expense, 'sync', this.onsync);
+                this.listenTo(this.expense, 'error', this.onerror);
+            }
+        },
+
+		render: function() {
+            if (!this.expense) {
+                this.expense = new ex.Expense().toJSON();
             }
 			var variables = {
-				expense: expense
+				expense: this.expense.toJSON()
 			};
+
 			var template = Handlebars.compile($('#add-page').html());
 			this.$el.find('form').html(template(variables));
-            $.event.trigger('create');
-		}
+
+            $(document).on('click', '#save-btn', $.proxy(function() {
+                var amount = $('#amount').val();
+                if ($('#deposit').val() === 'off') {
+                    amount = -amount;
+                }
+                $.mobile.loading('show', {
+                    text: 'Saving expense...',
+                    textVisible: true,
+                    theme: 'a'
+                });
+                this.expense.save({
+                    description: $('#desc').val(),
+                    amount: parseFloat(amount)
+                });
+            }, this));
+            $(document).on('click', '#delete-btn', $.proxy(function() {
+                $.mobile.loading('show', {
+                    text: 'Deleting expense...',
+                    theme: 'a'
+                });
+                this.expense.destroy();
+            }, this));
+		},
+
+        onsync: function(model, resp, options) {
+            $.mobile.loading('hide');
+            new ex.MainView({el: $('#home')});
+            $.mobile.changePage('#home');
+        },
+
+        ondestroy: function(model, collection, options) {
+            $.mobile.loading('hide');
+            new ex.MainView({el: $('#home')});
+            $.mobile.changePage('#home');
+        },
+
+        onerror: function(model, xhr, options) {
+            $.mobile.loading('hide');
+            alert('An error occurred.');
+        },
+
+        destroy: function() {
+            this.$el.find('form').html('');
+            this.remove();
+        }
 	});
 
+    /**
+     * The main view, which displays a list of expenses.
+     * @type {Object|*|void|e.extend|extend|S.extend}
+     */
 	ex.MainView = Backbone.View.extend({
 		initialize: function() {
 			this.expenses = new ex.Expenses();
@@ -125,9 +191,10 @@
             this.total.fetch();
 
             $('.add-expense').click($.proxy(function() {
-                var view = new ex.AddView({el: $('#update')});
-                view.render();
-                $.event.trigger('create');
+                ex.addView = new ex.AddView({
+                    el: $('#update')
+                });
+                ex.addView.render();
             }, this));
 		},
 
@@ -162,21 +229,36 @@
             $('#expense-list').listview('refresh');
             $(document).on('click', '.update-expense', function() {
                 var index = $(this).attr('data-expense-index');
-                var view = new ex.AddView({el: $('#update')});
-                view.render(self.expenses.models[index].toJSON());
+                ex.addView = new ex.AddView({
+                    el: $('#update'),
+                    expenses: self.expenses,
+                    index: index
+                });
+                ex.addView.render();
             });
 			return this;
-		}
+		},
+
+        destroy: function() {
+            this.$el.find('#expense-list').html('');
+            this.remove();
+        }
 	});
 
-	$(document).on('pagebeforeload', function(event, data) {
-		if (data.url === '#list') {
-			new ex.ExpenseList({el: $('#list')});
-		}
-	});
+    $(document).on('pagechange', function(event, data) {
+        $.event.trigger('create');
+        $('ul[data-role=listview]').listview('refresh');
+
+        /* Clean up after page change. */
+        if (data.url === '#home' && ex.addView) {
+            ex.addView.destroy();
+        } else if (data.url === '#update' && ex.homeView) {
+            ex.homeView.destroy();
+        }
+    });
 
 	$(function() {
-		var home = new ex.MainView({el: $('#home')});
+		ex.homeView = new ex.MainView({el: $('#home')});
 	});
 
 })(window.ex = window.ex || {}, jQuery);
