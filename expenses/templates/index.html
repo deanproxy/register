@@ -25,8 +25,8 @@
 
 	{% js 'application.js' %}
 	{% js 'form.js' %}
-	{% js 'expenses.js' %}
     {% js 'handlebars-helpers.js' %}
+	{% js 'expenses.js' %}
 
 </head>
 
@@ -51,12 +51,14 @@
 
 	<script type="text/x-handlebars-template" id="list-page">
 		{{#each expenses}}
-			{{dateDivider created_at}}
-			<li>
-				<a href="#update" class="update-expense" data-expense-index="{{@index}}">
-                    {{description}} <span class="ui-li-count {{amountType amount}}">{{formatCurrency amount}}</span>
-                </a>
-			</li>
+            {{#if description}}
+                {{dateDivider created_at}}
+                <li>
+                    <a href="#update" class="update-expense" data-expense-index="{{@index}}">
+                        <span class="description">{{description}}</span> <span class="ui-li-count {{amountType amount}}">{{formatCurrency amount}}</span>
+                    </a>
+                </li>
+            {{/if}}
         {{/each}}
 		{{#ifPagination model}}
             <li id="load-more">
@@ -95,7 +97,7 @@
             <li>
                 <select name="deposit" id="deposit" data-role="slider" data-mini="true">
                     <option value="off">No</option>
-                    <option value="on" {{#if expense.amount}}selected=""{{/if}}>Yes</option>
+                    <option value="on" {{#if expense.deposit}}selected=""{{/if}}>Yes</option>
                 </select>
                 <label for="deposit">Deposit?</label>
             </li>

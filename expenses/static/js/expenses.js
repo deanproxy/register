@@ -1,32 +1,11 @@
 (function(ex, $) {
-
-
-	function loadMoreClickHandler() {
-		$('#loadMore a').click(function() {
-			$.mobile.showPageLoadingMsg();
-			$.get($(this).attr('href'), 'offset=' + $(this).attr('data-offset'), function(data) {
-				var ul = $('#expenseList');
-				$('#loadMore').remove();
-				ul.append(data);
-				ul.listview('refresh');
-				$.mobile.hidePageLoadingMsg();
-				/* Element gets redrawn so call ourselves again. */
-				loadMoreClickHandler();
-			}).error(function() {
-				alert('Something bad happend... Sorry.');
-				$.mobile.hidePageLoadingMsg();
-			});
-			return false;
-		});
-	}
-
 	 /* alias away the sync method */
     Backbone._sync = Backbone.sync;
 
     /* define a new sync method */
     Backbone.sync = function(method, model, options) {
         /* only need a token for non-get requests */
-        if (method == 'create' || method == 'update' || method == 'delete') {
+        if (method === 'create' || method === 'update' || method === 'delete') {
             // CSRF token value is in an embedded meta tag 
             var csrfToken = $("input[name=csrfmiddlewaretoken]").val();
 
@@ -43,8 +22,7 @@
 		urlRoot: '/expenses/',
 		defaults: {
 			created_at: '',
-			description: '',
-			amount: 0.0
+			description: ''
 		}
 	});
 
@@ -105,26 +83,23 @@
      * Handles adding and updating an expense.
      * @type {Object|*|void|e.extend|extend|S.extend}
      */
-	ex.AddView = Backbone.View.extend({
+	var AddView = Backbone.View.extend({
         initialize: function() {
-            if (!this.options.index) {
-                this.options.index = 0;
-            } else {
-                this.expense = this.options.expenses.models[this.options.index];
-                this.listenTo(this.expense, 'destroy', this.ondestroy);
-                this.listenTo(this.expense, 'sync', this.onsync);
-                this.listenTo(this.expense, 'error', this.onerror);
-            }
+            this.$el = $('#update');
         },
 
 		render: function() {
-            if (!this.expense) {
-                this.expense = new ex.Expense().toJSON();
-            }
 			var variables = {
-				expense: this.expense.toJSON()
+				expense: this.options.expense.toJSON()
 			};
 
+            /* We don't want to display the - sign when editing. */
+            if (variables.expense.amount < 0) {
+                variables.expense.amount -= variables.expense.amount * 2;
+                variables.expense.deposit = false;
+            } else if (variables.expense.amount) {
+                variables.expense.deposit = true;
+            }
 			var template = Handlebars.compile($('#add-page').html());
 			this.$el.find('form').html(template(variables));
 
@@ -138,7 +113,7 @@
                     textVisible: true,
                     theme: 'a'
                 });
-                this.expense.save({
+                this.options.expense.save({
                     description: $('#desc').val(),
                     amount: parseFloat(amount)
                 });
@@ -146,28 +121,12 @@
             $(document).on('click', '#delete-btn', $.proxy(function() {
                 $.mobile.loading('show', {
                     text: 'Deleting expense...',
+                    textVisible: true,
                     theme: 'a'
                 });
-                this.expense.destroy();
+                this.options.expense.destroy();
             }, this));
 		},
-
-        onsync: function(model, resp, options) {
-            $.mobile.loading('hide');
-            new ex.MainView({el: $('#home')});
-            $.mobile.changePage('#home');
-        },
-
-        ondestroy: function(model, collection, options) {
-            $.mobile.loading('hide');
-            new ex.MainView({el: $('#home')});
-            $.mobile.changePage('#home');
-        },
-
-        onerror: function(model, xhr, options) {
-            $.mobile.loading('hide');
-            alert('An error occurred.');
-        },
 
         destroy: function() {
             this.$el.find('form').html('');
@@ -185,16 +144,20 @@
 			this.total = new ex.Total();
 
             this.listenTo(this.expenses, 'sync', this.onSyncList);
+            this.listenTo(this.expenses, 'destroy', this.ondestroy);
+            this.listenTo(this.expenses, 'error', this.onerror);
             this.listenTo(this.total, 'sync', this.onSyncTotal);
 
             this.expenses.fetch();
             this.total.fetch();
 
             $('.add-expense').click($.proxy(function() {
-                ex.addView = new ex.AddView({
-                    el: $('#update')
+                this.index = 0;
+                this.expenses.add(new ex.Expense(), {at:this.index});
+                var addView = new AddView({
+                    expense: this.expenses.models[0]
                 });
-                ex.addView.render();
+                addView.render();
             }, this));
 		},
 
@@ -211,15 +174,31 @@
         },
 
         onSyncList: function(data) {
-            $('#load-more').remove();
-            var variables = {
-                'model': data,
-                'expenses': data.toJSON()
-            };
-            this.renderList(variables);
-            $(document).on('click', '#more-expenses', $.proxy(function() {
-                this.expenses.nextPage();
-            }, this));
+            if (data instanceof ex.Expenses) {
+                $('#load-more').remove();
+                var variables = {
+                    'model': data,
+                    'expenses': data.toJSON()
+                };
+                this.renderList(variables);
+                $(document).on('click', '#more-expenses', $.proxy(function() {
+                    $.mobile.loading('show', {
+                        text: 'Loading more',
+                        textVisible: true,
+                        theme: 'a'
+                    });
+                    this.expenses.nextPage();
+                }, this));
+
+                /* hide any loading messages and see if we can change to the list page if not already there. */
+                $.mobile.loading('hide');
+                $.mobile.changePage('#home');
+            } else if (data instanceof ex.Expense) {
+                /* If we've just updated a model, we want to refresh the list page. */
+                $('#expense-list li').remove();
+                this.expenses.fetch();
+                this.total.fetch();
+            }
         },
 
 		renderList: function(data) {
@@ -228,37 +207,34 @@
             this.$el.find('#expense-list').append(template(data));
             $('#expense-list').listview('refresh');
             $(document).on('click', '.update-expense', function() {
-                var index = $(this).attr('data-expense-index');
-                ex.addView = new ex.AddView({
-                    el: $('#update'),
-                    expenses: self.expenses,
-                    index: index
+                self.index = $(this).attr('data-expense-index');
+                var addView = new AddView({
+                    expense: self.expenses.models[self.index]
                 });
-                ex.addView.render();
+                addView.render();
             });
 			return this;
 		},
 
-        destroy: function() {
-            this.$el.find('#expense-list').html('');
-            this.remove();
+        ondestroy: function(model, collection, options) {
+            $('#expense-list li').remove();
+            this.expenses.fetch();
+            this.total.fetch();
+        },
+
+        onerror: function(model, xhr, options) {
+            $.mobile.loading('hide');
+            alert('An error occurred.');
         }
 	});
 
     $(document).on('pagechange', function(event, data) {
         $.event.trigger('create');
         $('ul[data-role=listview]').listview('refresh');
-
-        /* Clean up after page change. */
-        if (data.url === '#home' && ex.addView) {
-            ex.addView.destroy();
-        } else if (data.url === '#update' && ex.homeView) {
-            ex.homeView.destroy();
-        }
     });
 
 	$(function() {
-		ex.homeView = new ex.MainView({el: $('#home')});
+		var homeView = new ex.MainView({el: $('#home')});
 	});
 
 })(window.ex = window.ex || {}, jQuery);
