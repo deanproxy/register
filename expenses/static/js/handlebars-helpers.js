@@ -1,18 +1,5 @@
 (function(ex, $) {
 
-    var lastDate = '';
-    Handlebars.registerHelper('dateDivider', function(datestr) {
-        var date = new Date(Date.parse(datestr));
-        var formatted = date.getMonth() + '/' + date.getDate() + '/' + date.getFullYear();
-        var html='';
-
-        if (lastDate !== formatted) {
-            html = '<li data-role="list-divider">' + Handlebars.Utils.escapeExpression(formatted) + '</li>';
-            lastDate = formatted;
-        }
-        return new Handlebars.SafeString(html);
-    });
-
     ex.formatCurrency = function(num) {
         if (isNaN(num))
             num = "0";

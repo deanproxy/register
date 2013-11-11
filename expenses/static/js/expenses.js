@@ -118,6 +118,7 @@
                     amount: parseFloat(amount)
                 });
             }, this));
+
             $(document).on('click', '#delete-btn', $.proxy(function() {
                 $.mobile.loading('show', {
                     text: 'Deleting expense...',
@@ -148,9 +149,6 @@
             this.listenTo(this.expenses, 'error', this.onerror);
             this.listenTo(this.total, 'sync', this.onSyncTotal);
 
-            this.expenses.fetch();
-            this.total.fetch();
-
             $('.add-expense').click($.proxy(function() {
                 this.index = 0;
                 this.expenses.add(new ex.Expense(), {at:this.index});
@@ -159,6 +157,27 @@
                 });
                 addView.render();
             }, this));
+
+            /* Pull-to-refresh w/ scrollz will start the initialization process */
+            $('#content').on('pulled', $.proxy(function() {
+                $('#expense-list').empty();
+                this.expenses.fetch({
+                    success: $.proxy(function() {
+                        this.total.fetch({
+                            success: function() {
+                                 $("#expense-list").listview({
+                                    autodividers: true,
+                                    autodividersSelector: function (li) {
+                                        var date = new Date(Date.parse(li.attr("data-date")));
+                                        return date.getMonth() + '/' + date.getDate() + '/' + date.getFullYear();
+                                    }
+                                }).listview("refresh");
+                                $('#content').scrollz('hidePullHeader');
+                            }
+                        });
+                    }, this)
+                });
+            }, this)).trigger('pulled');
 		},
 
         onSyncTotal: function(data) {
@@ -188,6 +207,7 @@
                         theme: 'a'
                     });
                     this.expenses.nextPage();
+                    $('#expense-list').listview('refresh');
                 }, this));
 
                 /* hide any loading messages and see if we can change to the list page if not already there. */
@@ -195,9 +215,10 @@
                 $.mobile.changePage('#home');
             } else if (data instanceof ex.Expense) {
                 /* If we've just updated a model, we want to refresh the list page. */
-                $('#expense-list li').remove();
+                $('#expense-list').empty();
                 this.expenses.fetch();
                 this.total.fetch();
+                $(document).off('click', '#save-btn');
             }
         },
 
@@ -217,7 +238,7 @@
 		},
 
         ondestroy: function(model, collection, options) {
-            $('#expense-list li').remove();
+            $('#expense-list').empty();
             this.expenses.fetch();
             this.total.fetch();
         },
