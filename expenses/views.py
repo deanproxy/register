@@ -9,9 +9,29 @@ from expenses.forms import ExpenseForm
 from expenses.models import Expense, Balance
 from django.core import serializers
 from django.db.models.query import QuerySet
+from django.contrib.auth import authenticate
 
 MAX_RETURNED_EXPENSES = 30
 
+def login_required(function=None, redirect_field_name=None):
+    """
+    Just make sure the user is authenticated to access a certain ajax view
+
+    Otherwise return a HttpResponse 401 - authentication required
+    instead of the 302 redirect of the original Django decorator
+    """
+    def _decorator(view_func):
+        def _wrapped_view(request, *args, **kwargs):
+            if request.user.is_authenticated():
+                return view_func(request, *args, **kwargs)
+            else:
+                return HttpResponse(status=401)
+        return _wrapped_view
+
+    if function is None:
+        return _decorator
+    else:
+        return _decorator(function)
 
 def _serialize(model):
     obj = {}
@@ -37,10 +57,21 @@ def serialize(models):
     return obj
 
 
+def login(request):
+    status = 401
+    data = json.loads(request.body)
+    user = authenticate(username=data['username'], password=data['password'])
+    if user:
+        status = 200
+
+    return HttpResponse(status=status)
+
+
 def index(request):
     return render(request, 'index.html')
 
 
+@login_required
 def expense(request, id=0):
     """ Get or Create/Update an expense """
 
@@ -58,6 +89,7 @@ def expense(request, id=0):
         expense.save()
 
         balance.amount += expense.amount
+        balance.save()
     elif request.method == 'POST':
         data = json.loads(request.body)
         expense = Expense(description=data['description'], amount=data['amount'])
@@ -92,6 +124,7 @@ def expense(request, id=0):
     return HttpResponse(content=json.dumps(serialize(expense)), status=status, mimetype='application/json')
 
 
+@login_required
 def total(request):
     """ Display the total """
 
@@ -105,6 +138,7 @@ def total(request):
     return HttpResponse(json.dumps(json_obj), mimetype='application/json')
 
 
+@login_required
 def list(request):
     """ render the list page with 30 entries """
 
@@ -117,9 +151,5 @@ def list(request):
 
     json_object = {'total': total, 'remaining': remaining, 'pages': pages, 'expenses': serialize(expenses)}
     return HttpResponse(content=json.dumps(json_object), mimetype='application/json')
-
-
-def destroy(request, id):
-    """ Delete an expense. Update the current Balance. """
 
 

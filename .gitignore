@@ -1,1 +1,4 @@
 *.db
+.idea
+.DS_Store
+*.pyc

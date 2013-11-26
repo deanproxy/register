@@ -35,9 +35,9 @@
 <body>
 	{% csrf_token %}
     {% verbatim %}
-	<div id="home" data-role="page" role="main" data-swatch="a" data-theme="a">
+	<div id="home" role="main" data-role="page" data-swatch="a" data-theme="a">
 		<div data-role="header" class="ui-bar-a ui-header" data-position="fixed" data-tap-toggle="false" data-swatch="a" data-theme="a">
-			<h1>Total:</h1>
+			<h1></h1>
 			<a href="#preferences" data-iconpos="notext" class="preferences ui-icon-bars ui-btn-corner-all ui-btn-up-a ui-shadow" data-icon="bars" data-role="button" data-inline="true" data-transition="slideleft">Preferences</a>
 			<a href="#update" class="add-expense" data-iconpos="notext" data-role="button" data-inlne="true" data-transition="slideup" data-icon="plus" class="ui-btn-right">Add</a>
 		</div>
@@ -48,7 +48,7 @@
 	</div>
 
 	<script type="text/x-handlebars-template" id="home-page">
-		Total: <span class="{{amountType total}}">{{formatCurrency total}}</span>
+		<span class="{{amountType total}}">{{formatCurrency total}}</span>
 	</script>
 
 	<script type="text/x-handlebars-template" id="list-page">
@@ -86,7 +86,7 @@
 	</div>
 
 	<script type="text/x-handlebars-template" id="add-page">
-        <ul data-role="listview" data-inset="true">
+        <ul id="update-list" data-role="listview" data-inset="true">
             <li>
                 <label for="desc" class="ui-hidden-accessible">Description:</label>
                 <input type="text" name="description" class="required" placeholder="Item Description" id="desc" value="{{expense.description}}">
@@ -107,6 +107,28 @@
 			<button type="submit" data-rel="delete" id="delete-btn" data-theme="c">Delete Expense</button>
         {{/if}}
 	</script>
+
+    <div id="login" data-role="page" data-theme="a">
+        <div data-role="header">
+            <h1>Login</h1>
+        </div>
+        <div data-role="content">
+            <div id="login-error"> </div>
+            <form name="login" id="login-form" method="post" action="#">
+                <ul data-role="listview" data-inset="true">
+                    <li>
+                        <label for="username" class="ui-hidden-accessible">Username</label>
+                        <input type="text" name="username" placeholder="Username" id="username" required>
+                    </li>
+                    <li>
+                        <label for="password" class="ui-hidden-accessible">Password</label>
+                        <input type="password" name="password" placeholder="Password" id="password" required>
+                    </li>
+                </ul>
+                <button type="submit" id="login-btn" data-theme="a">Login</button>
+            </form>
+        </div>
+    </div>
 
     {% endverbatim %}
 </body>

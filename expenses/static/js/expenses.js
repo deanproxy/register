@@ -18,6 +18,14 @@
         return Backbone._sync(method, model, options);
     };
 
+    ex.Login = Backbone.Model.extend({
+        urlRoot: '/login/',
+        defaults: {
+            username: '',
+            password: ''
+        }
+    });
+
 	ex.Expense = Backbone.Model.extend({
 		urlRoot: '/expenses/',
 		defaults: {
@@ -79,6 +87,43 @@
 		}
 	});
 
+    var LoginView = Backbone.View.extend({
+        initialize: function() {
+            this.$el = $('#login');
+            this.login = new ex.Login();
+
+            this.listenTo(this.login, 'sync', this.onsync);
+            this.listenTo(this.login, 'error', this.onerror);
+
+            this.render();
+        },
+
+        render: function() {
+            $('#login-btn').click(function(evt) {
+                this.login.set({
+                    username: $('#username').val(),
+                    password: $('#password').val()
+                });
+                $.mobile.loading('show', {
+                    text: 'Logging in...',
+                    textVisible: true,
+                    theme: 'a'
+                })
+                this.login.fetch();
+                evt.preventDefault();
+            });
+        },
+
+        onsync: function(data) {
+            $.mobile.loading('hide');
+            ex.homeView.changePage();
+        },
+
+        onerror: function(model, xhr, options) {
+            $('#login-error').show().html('Incorrect username or password');
+        }
+    });
+
     /**
      * Handles adding and updating an expense.
      * @type {Object|*|void|e.extend|extend|S.extend}
@@ -127,6 +172,8 @@
                 });
                 this.options.expense.destroy();
             }, this));
+            $.event.trigger('create');
+            $('#update-list').listview('refresh');
 		},
 
         destroy: function() {
@@ -144,7 +191,7 @@
 			this.expenses = new ex.Expenses();
 			this.total = new ex.Total();
 
-            this.listenTo(this.expenses, 'sync', this.onSyncList);
+            this.listenTo(this.expenses, 'sync', this.onsync);
             this.listenTo(this.expenses, 'destroy', this.ondestroy);
             this.listenTo(this.expenses, 'error', this.onerror);
             this.listenTo(this.total, 'sync', this.onSyncTotal);
@@ -152,13 +199,14 @@
             $('.add-expense').click($.proxy(function() {
                 this.index = 0;
                 this.expenses.add(new ex.Expense(), {at:this.index});
-                var addView = new AddView({
-                    expense: this.expenses.models[0]
-                });
-                addView.render();
+                if (!ex.addView) {
+                    ex.addView = new AddView();
+                }
+                ex.addView.options.expense = this.expenses.models[0];
+                ex.addView.render();
             }, this));
 
-            /* Pull-to-refresh w/ scrollz will start the initialization process */
+            /* Pull-to-refresh w/ scrollz will start the initialization process. */
             $('#content').on('pulled', $.proxy(function() {
                 $('#expense-list').empty();
                 this.expenses.fetch({
@@ -192,9 +240,14 @@
             this.$el.find('h1').html(template(data));
         },
 
-        onSyncList: function(data) {
+        onsync: function(data, resp, options) {
             if (data instanceof ex.Expenses) {
-                $('#load-more').remove();
+                /* Clear everything if we're on page 1. */
+                if (data.page === 1) {
+                    $('#expense-list').empty();
+                } else {
+                    $('#load-more').remove();
+                }
                 var variables = {
                     'model': data,
                     'expenses': data.toJSON()
@@ -212,10 +265,10 @@
 
                 /* hide any loading messages and see if we can change to the list page if not already there. */
                 $.mobile.loading('hide');
-                $.mobile.changePage('#home');
+                if ($.mobile.activePage.attr('id') !== 'home') {
+                    window.history.go(-1);
+                }
             } else if (data instanceof ex.Expense) {
-                /* If we've just updated a model, we want to refresh the list page. */
-                $('#expense-list').empty();
                 this.expenses.fetch();
                 this.total.fetch();
                 $(document).off('click', '#save-btn');
@@ -229,10 +282,11 @@
             $('#expense-list').listview('refresh');
             $(document).on('click', '.update-expense', function() {
                 self.index = $(this).attr('data-expense-index');
-                var addView = new AddView({
-                    expense: self.expenses.models[self.index]
-                });
-                addView.render();
+                if (!ex.addView) {
+                    ex.addView = new AddView();
+                }
+                ex.addView.options.expense =  self.expenses.models[self.index];
+                ex.addView.render();
             });
 			return this;
 		},
@@ -241,21 +295,30 @@
             $('#expense-list').empty();
             this.expenses.fetch();
             this.total.fetch();
+            window.history.go(-1);
         },
 
         onerror: function(model, xhr, options) {
-            $.mobile.loading('hide');
-            alert('An error occurred.');
+            if (xhr.status === 401) {
+                $.mobile.changePage('#login');
+            } else {
+                $.mobile.loading('hide');
+                alert('An error occurred.');
+            }
+        },
+
+        changePage: function() {
+            this.total.fetch();
+            this.expenses.fetch({
+                success: function() {
+                    $.mobile.changePage('#home');
+                }
+            });
         }
 	});
 
-    $(document).on('pagechange', function(event, data) {
-        $.event.trigger('create');
-        $('ul[data-role=listview]').listview('refresh');
-    });
-
 	$(function() {
-		var homeView = new ex.MainView({el: $('#home')});
+        ex.homeView = new ex.MainView({el: $('#home')});
 	});
 
 })(window.ex = window.ex || {}, jQuery);
