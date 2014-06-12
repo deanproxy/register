@@ -1,4 +1,4 @@
-(function(ex, $) {
+(function(ex) {
 	 /* alias away the sync method */
     Backbone._sync = Backbone.sync;
 
@@ -89,7 +89,7 @@
 
     var LoginView = Backbone.View.extend({
         initialize: function() {
-            this.$el = $('#login');
+            this.$el = $('#content');
             this.login = new ex.Login();
 
             this.listenTo(this.login, 'sync', this.onsync);
@@ -99,27 +99,35 @@
         },
 
         render: function() {
-            $('#login-btn').click(function(evt) {
-                this.login.set({
+            var template = Handlebars.compile($('#login-page').html());
+            this.$el.html(template());
+            this.changePage();
+
+            $('#login-btn').click($.proxy(function(evt) {
+                this.login.save({
                     username: $('#username').val(),
                     password: $('#password').val()
                 });
-                $.mobile.loading('show', {
-                    text: 'Logging in...',
-                    textVisible: true,
-                    theme: 'a'
-                })
-                this.login.fetch();
+                // $.mobile.loading('show', {
+                //     text: 'Logging in...',
+                //     textVisible: true,
+                //     theme: 'a'
+                // })
                 evt.preventDefault();
-            });
+            }, this));
         },
 
         onsync: function(data) {
-            $.mobile.loading('hide');
-            ex.homeView.changePage();
+            // $.mobile.loading('hide');
+            new MainView();
+        },
+
+        changePage: function() {
+            // $.mobile.changePage('#login');
         },
 
         onerror: function(model, xhr, options) {
+            // $.mobile.loading('hide');
             $('#login-error').show().html('Incorrect username or password');
         }
     });
@@ -130,7 +138,8 @@
      */
 	var AddView = Backbone.View.extend({
         initialize: function() {
-            this.$el = $('#update');
+            this.$el = $('#add');
+            this.$el.show();
         },
 
 		render: function() {
@@ -145,19 +154,19 @@
             } else if (variables.expense.amount) {
                 variables.expense.deposit = true;
             }
-			var template = Handlebars.compile($('#add-page').html());
-			this.$el.find('form').html(template(variables));
+			var template = Handlebars.compile($('#edit-page').html());
+			this.$el.html(template(variables));
 
             $(document).on('click', '#save-btn', $.proxy(function() {
                 var amount = $('#amount').val();
                 if ($('#deposit').val() === 'off') {
                     amount = -amount;
                 }
-                $.mobile.loading('show', {
-                    text: 'Saving expense...',
-                    textVisible: true,
-                    theme: 'a'
-                });
+                // $.mobile.loading('show', {
+                //     text: 'Saving expense...',
+                //     textVisible: true,
+                //     theme: 'a'
+                // });
                 this.options.expense.save({
                     description: $('#desc').val(),
                     amount: parseFloat(amount)
@@ -165,19 +174,18 @@
             }, this));
 
             $(document).on('click', '#delete-btn', $.proxy(function() {
-                $.mobile.loading('show', {
-                    text: 'Deleting expense...',
-                    textVisible: true,
-                    theme: 'a'
-                });
+                // $.mobile.loading('show', {
+                //     text: 'Deleting expense...',
+                //     textVisible: true,
+                //     theme: 'a'
+                // });
                 this.options.expense.destroy();
             }, this));
-            $.event.trigger('create');
-            $('#update-list').listview('refresh');
 		},
 
         destroy: function() {
-            this.$el.find('form').html('');
+            this.$el.hide();
+            $(document).off('click', '#save-btn');
             this.remove();
         }
 	});
@@ -186,8 +194,9 @@
      * The main view, which displays a list of expenses.
      * @type {Object|*|void|e.extend|extend|S.extend}
      */
-	ex.MainView = Backbone.View.extend({
+	var MainView = Backbone.View.extend({
 		initialize: function() {
+            this.$el = $('#content');
 			this.expenses = new ex.Expenses();
 			this.total = new ex.Total();
 
@@ -195,6 +204,7 @@
             this.listenTo(this.expenses, 'destroy', this.ondestroy);
             this.listenTo(this.expenses, 'error', this.onerror);
             this.listenTo(this.total, 'sync', this.onSyncTotal);
+
 
             $('.add-expense').click($.proxy(function() {
                 this.index = 0;
@@ -204,28 +214,25 @@
                 }
                 ex.addView.options.expense = this.expenses.models[0];
                 ex.addView.render();
+                this.$el.hide();
             }, this));
 
-            /* Pull-to-refresh w/ scrollz will start the initialization process. */
-            $('#content').on('pulled', $.proxy(function() {
-                $('#expense-list').empty();
-                this.expenses.fetch({
-                    success: $.proxy(function() {
-                        this.total.fetch({
-                            success: function() {
-                                 $("#expense-list").listview({
-                                    autodividers: true,
-                                    autodividersSelector: function (li) {
-                                        var date = new Date(Date.parse(li.attr("data-date")));
-                                        return date.getMonth() + '/' + date.getDate() + '/' + date.getFullYear();
-                                    }
-                                }).listview("refresh");
-                                $('#content').scrollz('hidePullHeader');
-                            }
-                        });
-                    }, this)
-                });
-            }, this)).trigger('pulled');
+            $('#expense-list').empty();
+            this.expenses.fetch({
+                success: $.proxy(function() {
+                    this.total.fetch({
+                        success: function() {
+                            //  $("#expense-list").listview({
+                            //     autodividers: true,
+                            //     autodividersSelector: function (li) {
+                            //         var date = new Date(Date.parse(li.attr("data-date")));
+                            //         return date.getMonth() + '/' + date.getDate() + '/' + date.getFullYear();
+                            //     }
+                            // }).listview("refresh");
+                        }
+                    });
+                }, this)
+            });
 		},
 
         onSyncTotal: function(data) {
@@ -236,8 +243,8 @@
         },
 
         renderTotal: function(data) {
-            var template = Handlebars.compile($('#home-page').html());
-            this.$el.find('h1').html(template(data));
+            var template = Handlebars.compile($('#total-page').html());
+            $('#header h1').html(template(data));
         },
 
         onsync: function(data, resp, options) {
@@ -254,38 +261,39 @@
                 };
                 this.renderList(variables);
                 $(document).on('click', '#more-expenses', $.proxy(function() {
-                    $.mobile.loading('show', {
-                        text: 'Loading more',
-                        textVisible: true,
-                        theme: 'a'
-                    });
+                    // $.mobile.loading('show', {
+                    //     text: 'Loading more',
+                    //     textVisible: true,
+                    //     theme: 'a'
+                    // });
                     this.expenses.nextPage();
-                    $('#expense-list').listview('refresh');
                 }, this));
 
-                /* hide any loading messages and see if we can change to the list page if not already there. */
-                $.mobile.loading('hide');
-                if ($.mobile.activePage.attr('id') !== 'home') {
-                    window.history.go(-1);
+                if (ex.addView) {
+                    ex.addView.destroy();
+                    ex.addView = null;
+                    this.$el.show();
                 }
+                // $.mobile.loading('hide');
             } else if (data instanceof ex.Expense) {
                 this.expenses.fetch();
                 this.total.fetch();
-                $(document).off('click', '#save-btn');
             }
         },
 
 		renderList: function(data) {
             var self = this;
             var template = Handlebars.compile($('#list-page').html());
-            this.$el.find('#expense-list').append(template(data));
-            $('#expense-list').listview('refresh');
+            $.ui.addContentDiv('main', '');
+            $.ui.updatePanel('#main', '<ul class="list">' + template(data) + '</ul>');
+            $.ui.loadContent('#main');
+
             $(document).on('click', '.update-expense', function() {
                 self.index = $(this).attr('data-expense-index');
                 if (!ex.addView) {
                     ex.addView = new AddView();
                 }
-                ex.addView.options.expense =  self.expenses.models[self.index];
+                ex.addView.options.expense = self.expenses.models[self.index];
                 ex.addView.render();
             });
 			return this;
@@ -295,14 +303,13 @@
             $('#expense-list').empty();
             this.expenses.fetch();
             this.total.fetch();
-            window.history.go(-1);
         },
 
         onerror: function(model, xhr, options) {
             if (xhr.status === 401) {
-                $.mobile.changePage('#login');
+                new LoginView();
             } else {
-                $.mobile.loading('hide');
+                // $.mobile.loading('hide');
                 alert('An error occurred.');
             }
         },
@@ -311,14 +318,14 @@
             this.total.fetch();
             this.expenses.fetch({
                 success: function() {
-                    $.mobile.changePage('#home');
+                    // $.mobile.changePage('#home');
                 }
             });
         }
 	});
 
 	$(function() {
-        ex.homeView = new ex.MainView({el: $('#home')});
+        ex.homeView = new MainView();
 	});
 
-})(window.ex = window.ex || {}, jQuery);
+})(window.ex = window.ex || {});

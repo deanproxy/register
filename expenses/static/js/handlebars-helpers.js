@@ -1,4 +1,4 @@
-(function(ex, $) {
+(function(ex) {
 
     ex.formatCurrency = function(num) {
         if (isNaN(num))
@@ -29,4 +29,4 @@
         return html;
     });
 
-})(window.ex = window.ex || {}, jQuery);
+})(window.ex = window.ex || {});

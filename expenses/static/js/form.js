@@ -1,4 +1,4 @@
-(function($) {
+(function() {
 
 	$('body').on('pageshow', '.form', function(event) {
 		$('form').validate({
@@ -34,4 +34,4 @@
 		});
 	});
 
-})(jQuery);
+})();

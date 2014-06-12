@@ -9,7 +9,7 @@ from expenses.forms import ExpenseForm
 from expenses.models import Expense, Balance
 from django.core import serializers
 from django.db.models.query import QuerySet
-from django.contrib.auth import authenticate
+from django.contrib import auth
 
 MAX_RETURNED_EXPENSES = 30
 
@@ -60,11 +60,13 @@ def serialize(models):
 def login(request):
     status = 401
     data = json.loads(request.body)
-    user = authenticate(username=data['username'], password=data['password'])
-    if user:
+    user = auth.authenticate(username=data['username'], password=data['password'])
+    if user is not None and user.is_active:
+        auth.login(request, user)
         status = 200
 
-    return HttpResponse(status=status)
+    data['password'] = ''
+    return HttpResponse(status=status, content=json.dumps(data))
 
 
 def index(request):
