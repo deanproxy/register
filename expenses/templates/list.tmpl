@@ -1,0 +1,17 @@
+{{#each expenses}}
+    {{#if description}}
+        <li data-date="{{created_at}}">
+            <a href="#update" class="update-expense" data-expense-index="{{@index}}">
+                <span class="description">{{description}}</span> <span class="ui-li-count {{amountType amount}}">{{formatCurrency amount}}</span>
+            </a>
+        </li>
+    {{/if}}
+{{/each}}
+{{#ifPagination model}}
+    <li id="load-more">
+        <a href="#" id="more-expenses">
+            Load more expenses...
+            <div>{{remaining}} expenses remaining, {{total}} total</div>
+        </a>
+    </li>
+{{/ifPagination}}

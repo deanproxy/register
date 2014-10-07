@@ -1,0 +1,19 @@
+<div data-role="header">
+      <h1>Login</h1>
+  </div>
+  <div data-role="content">
+      <div id="login-error"> </div>
+      <form name="login" id="login-form" method="post" action="#">
+          <ul data-role="listview" data-inset="true">
+              <li>
+                  <label for="username" class="ui-hidden-accessible">Username</label>
+                  <input type="text" name="username" placeholder="Username" id="username" required>
+              </li>
+              <li>
+                  <label for="password" class="ui-hidden-accessible">Password</label>
+                  <input type="password" name="password" placeholder="Password" id="password" required>
+              </li>
+          </ul>
+          <button type="submit" id="login-btn" data-theme="a">Login</button>
+      </form>
+  </div>

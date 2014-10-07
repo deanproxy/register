@@ -14,17 +14,22 @@
 	<title>Budget</title>
     {% css 'af.ui.min.css' %}
     {% css 'icons.min.css' %}
-	{% css 'budget.css' %}
+    {% css 'budget.css' %}
 
     {% js 'appframework.ui.min.js' %}
 	{% js 'underscore-min.js' %}
 	{% js 'backbone-min.js' %}
-  {% js 'handlebars-v1.1.2.js' %}
+    {% js 'handlebars-v1.1.2.js' %}
 
 	{% js 'application.js' %}
 	{% js 'form.js' %}
-  {% js 'handlebars-helpers.js' %}
+    {% js 'handlebars-helpers.js' %}
 	{% js 'expenses.js' %}
+
+    {% js 'list.tmpl.js' %}
+    {% js 'total.tmpl.js' %}
+    {% js 'edit.tmpl.js' %}
+    {% js 'login.tmpl.js' %}
 
 </head>
 
@@ -39,88 +44,8 @@
         </div>
     </div>
 
-	<script type="text/x-handlebars-template" id="total-page">
-		<span class="{{amountType total}}">{{formatCurrency total}}</span>
-	</script>
-
-	<script type="text/x-handlebars-template" id="list-page">
-		{{#each expenses}}
-            {{#if description}}
-                <li data-date="{{created_at}}">
-                    <a href="#update" class="update-expense" data-expense-index="{{@index}}">
-                        <span class="description">{{description}}</span> <span class="ui-li-count {{amountType amount}}">{{formatCurrency amount}}</span>
-                    </a>
-                </li>
-            {{/if}}
-        {{/each}}
-		{{#ifPagination model}}
-            <li id="load-more">
-                <a href="#" id="more-expenses">
-                    Load more expenses...
-                    <div>{{remaining}} expenses remaining, {{total}} total</div>
-                </a>
-            </li>
-        {{/ifPagination}}
-	</script>
-
-	<script type="text/x-handlebars-template" id="edit-page">
-    <!-- New/Edit an expense -->
-      <div data-role="header">
-        <h1>Edit Expense</h1>
-        <a href="#" data-role="back" data-rel="back" data-icon="back">Cancel</a>
-        <a href="#" id="save-btn" data-role="button" data-rel="save" data-icon="check" class="ui-btn-right">Save</a>
-      </div>
-
-      <div data-role="content">
-        <form name="update" id="update-expense" method="post" action="#">
-          <ul id="update-list" data-role="listview" data-inset="true">
-              <li>
-                  <label for="desc" class="ui-hidden-accessible">Description:</label>
-                  <input type="text" name="description" class="required" placeholder="Item Description" id="desc" value="{{expense.description}}">
-              </li>
-              <li>
-                  <label for="amount" class="ui-hidden-accessible">Amount:</label>
-                  <input type="number" name="amount" placeholder="$0.00" class="required number" id="amount" step="0.01" value="{{expense.amount}}">
-              </li>
-              <li>
-                  <select name="deposit" id="deposit" data-role="slider" data-mini="true">
-                      <option value="off">No</option>
-                      <option value="on" {{#if expense.deposit}}selected=""{{/if}}>Yes</option>
-                  </select>
-                  <label for="deposit">Deposit?</label>
-              </li>
-          </ul>
-          {{#if expense.amount}}
-            <button type="submit" data-rel="delete" id="delete-btn" data-theme="c">Delete Expense</button>
-          {{/if}}
-        </form>
-      </div>
-  </script>
-
 	<script type="text/x-handlebars-template" id="add-page">
 	</script>
-
-	<script type="text/x-handlebars-template" id="login-page">
-      <div data-role="header">
-          <h1>Login</h1>
-      </div>
-      <div data-role="content">
-          <div id="login-error"> </div>
-          <form name="login" id="login-form" method="post" action="#">
-              <ul data-role="listview" data-inset="true">
-                  <li>
-                      <label for="username" class="ui-hidden-accessible">Username</label>
-                      <input type="text" name="username" placeholder="Username" id="username" required>
-                  </li>
-                  <li>
-                      <label for="password" class="ui-hidden-accessible">Password</label>
-                      <input type="password" name="password" placeholder="Password" id="password" required>
-                  </li>
-              </ul>
-              <button type="submit" id="login-btn" data-theme="a">Login</button>
-          </form>
-      </div>
-  </script>
 
     {% endverbatim %}
 </body>

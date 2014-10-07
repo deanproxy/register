@@ -94,6 +94,8 @@ STATICFILES_FINDERS = (
 #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
+# STATICFILES_STORAGE = 'pipeline.storage.PipelineCachedStorage'
+
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'brp&1i^=$#-0h@k!v=hh%7el#*z6j0oga&_l9v)p@o93zxhc4%'
 
@@ -166,3 +168,19 @@ LOGGING = {
         },
     }
 }
+
+# PIPELINE_TEMPLATE_EXT = '.tmpl'
+# PIPELINE_TEMPLATE_FUNC = 'Handlebars.compile'
+# PIPELINE_TEMPLATE_NAMESPACE = 'Handlebars.templates'
+# PIPELINE_JS = {
+#     'expenses': {
+#         'source_filenames': (
+#             'templates/*.tmpl',
+#         ),
+#         'output_filename': 'static/js/handlebar.templates.js'
+#     }
+# }
+
+# PIPELINE_COMPILERS = (
+#     'pipeline_handlebars.compiler.HandlebarsCompiler',
+# )
