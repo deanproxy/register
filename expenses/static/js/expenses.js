@@ -99,8 +99,7 @@
         },
 
         render: function() {
-            var template = Handlebars.compile($('#login-page').html());
-            this.$el.html(template());
+            this.$el.html(Handlebars.templates.login());
             this.changePage();
 
             $('#login-btn').click($.proxy(function(evt) {
@@ -154,8 +153,7 @@
             } else if (variables.expense.amount) {
                 variables.expense.deposit = true;
             }
-			var template = Handlebars.compile($('#edit-page').html());
-			this.$el.html(template(variables));
+			this.$el.html(Handlebars.templates.edit(variables));
 
             $(document).on('click', '#save-btn', $.proxy(function() {
                 var amount = $('#amount').val();
@@ -243,8 +241,7 @@
         },
 
         renderTotal: function(data) {
-            var template = Handlebars.compile($('#total-page').html());
-            $('#header h1').html(template(data));
+            $('#header h1').html(Handlebars.templates.total(data));
         },
 
         onsync: function(data, resp, options) {
@@ -283,9 +280,8 @@
 
 		renderList: function(data) {
             var self = this;
-            var template = Handlebars.compile($('#list-page').html());
             $.ui.addContentDiv('main', '');
-            $.ui.updatePanel('#main', '<ul class="list">' + template(data) + '</ul>');
+            $.ui.updatePanel('#main', '<ul class="list">' + Handlebars.templates.list(data) + '</ul>');
             $.ui.loadContent('#main');
 
             $(document).on('click', '.update-expense', function() {
