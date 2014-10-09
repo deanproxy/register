@@ -10,7 +10,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         for f in os.listdir(settings.SITE_ROOT + "/.."):
             tmpl_path = f + "/templates/"
-            js_path = f + "/static/js/handlebars/"
+            js_path = f + "/static/js/"
 
             if os.path.isdir(f) and os.path.isdir(tmpl_path):
                 if not os.path.isdir(js_path):
@@ -20,10 +20,11 @@ class Command(BaseCommand):
                         if exc.errno == errno.EEXIST:
                             print "Error: " + js_path + " exists."
 
-                for t in glob.glob(tmpl_path + "*" + HANDLEBARS_EXT):
-                    print "Compiling: " + t
-                    filename = os.path.splitext(os.path.basename(t))[0]
-                    call(['handlebars', t, '-f', js_path + filename + '.js'])
+                files = glob.glob(tmpl_path + "*" + HANDLEBARS_EXT)
+                args = ['handlebars']
+                args.extend(files)
+                args.extend(['-f', js_path + 'hbtemplates.js'])
+                call(args) 
 
 
 

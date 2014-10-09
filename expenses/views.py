@@ -123,7 +123,7 @@ def expense(request, id=0):
             logging.error('expense does not exist: ' + id)
             status = 404
 
-    return HttpResponse(content=json.dumps(serialize(expense)), status=status, mimetype='application/json')
+    return HttpResponse(content=json.dumps(serialize(expense)), status=status, content_type='application/json')
 
 
 @login_required
@@ -137,7 +137,7 @@ def total(request):
         pass
     else:
         json_obj['amount'] = balance.amount
-    return HttpResponse(json.dumps(json_obj), mimetype='application/json')
+    return HttpResponse(json.dumps(json_obj), content_type='application/json')
 
 
 @login_required
@@ -152,6 +152,6 @@ def list(request):
     pages = math.ceil(float(total) / float(MAX_RETURNED_EXPENSES))
 
     json_object = {'total': total, 'remaining': remaining, 'pages': pages, 'expenses': serialize(expenses)}
-    return HttpResponse(content=json.dumps(json_object), mimetype='application/json')
+    return HttpResponse(content=json.dumps(json_object), content_type='application/json')
 
 

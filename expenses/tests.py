@@ -4,11 +4,11 @@ when you run "manage.py test".
 
 Replace this with more appropriate tests for your application.
 """
+import json
 from datetime import datetime
 
 from django.test import TestCase
 from django.test.client import Client
-from django.utils import simplejson
 from expenses.models import Balance, Expense
 from expenses.templatetags import expense
 
@@ -24,14 +24,14 @@ class ExpenseTest(TestCase):
 		response = self.client.get('/expenses/total/')
 		self.assertEqual(response.status_code, 200)
 		self.assertEqual(response['Content-Type'], 'application/json')
-		json = simplejson.loads(response.content)
+		json = json.loads(response.content)
 		self.assertEqual(json['amount'], 0.0)
 
 		Balance.objects.create(amount=100.0)
 		response = self.client.get('/expenses/total/')
 		self.assertEqual(response.status_code, 200)
 		self.assertEqual(response['Content-Type'], 'application/json')
-		json = simplejson.loads(response.content)
+		json = json.loads(response.content)
 		self.assertEqual(json['amount'], 100.0)
 
 

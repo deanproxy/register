@@ -1,17 +1,25 @@
-{{#each expenses}}
-    {{#if description}}
-        <li data-date="{{created_at}}">
-            <a href="#update" class="update-expense" data-expense-index="{{@index}}">
-                <span class="description">{{description}}</span> <span class="ui-li-count {{amountType amount}}">{{formatCurrency amount}}</span>
-            </a>
-        </li>
-    {{/if}}
-{{/each}}
-{{#ifPagination model}}
-    <li id="load-more">
-        <a href="#" id="more-expenses">
-            Load more expenses...
-            <div>{{remaining}} expenses remaining, {{total}} total</div>
-        </a>
-    </li>
-{{/ifPagination}}
+<div class="edgetoedge">
+  <div class="toolbar">
+    <h1 id="header">Budget</h1>
+    <a href="#add" class="button add slideup">+</a>
+  </div>
+  <ul class="edgetoedge scroll">
+  {{#each expenses}}
+      {{#if description}}
+          <li data-date="{{created_at}}" class="arrow">
+              <a href="#update" class="update-expense" data-expense-index="{{@index}}">
+                  {{description}} <small class="counter {{amountType amount}}">{{formatCurrency amount}}</small>
+              </a>
+          </li>
+      {{/if}}
+  {{/each}}
+  {{#ifPagination model}}
+      <li id="load-more">
+          <a href="#" id="more-expenses">
+              Load more expenses...
+              <div>{{remaining}} expenses remaining, {{total}} total</div>
+          </a>
+      </li>
+  {{/ifPagination}}
+  </ul>
+</div>

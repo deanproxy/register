@@ -169,18 +169,5 @@ LOGGING = {
     }
 }
 
-# PIPELINE_TEMPLATE_EXT = '.tmpl'
-# PIPELINE_TEMPLATE_FUNC = 'Handlebars.compile'
-# PIPELINE_TEMPLATE_NAMESPACE = 'Handlebars.templates'
-# PIPELINE_JS = {
-#     'expenses': {
-#         'source_filenames': (
-#             'templates/*.tmpl',
-#         ),
-#         'output_filename': 'static/js/handlebar.templates.js'
-#     }
-# }
+TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 
-# PIPELINE_COMPILERS = (
-#     'pipeline_handlebars.compiler.HandlebarsCompiler',
-# )

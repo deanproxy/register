@@ -2,4 +2,4 @@
 .idea
 .DS_Store
 *.pyc
-handlebars
+hbtemplates.js

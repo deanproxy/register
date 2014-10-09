@@ -241,7 +241,7 @@
         },
 
         renderTotal: function(data) {
-            $('#header h1').html(Handlebars.templates.total(data));
+            $('#header').html(Handlebars.templates.total(data));
         },
 
         onsync: function(data, resp, options) {
@@ -280,9 +280,7 @@
 
 		renderList: function(data) {
             var self = this;
-            $.ui.addContentDiv('main', '');
-            $.ui.updatePanel('#main', '<ul class="list">' + Handlebars.templates.list(data) + '</ul>');
-            $.ui.loadContent('#main');
+            $('#content').append(Handlebars.templates.list(data));
 
             $(document).on('click', '.update-expense', function() {
                 self.index = $(this).attr('data-expense-index');
@@ -322,6 +320,11 @@
 
 	$(function() {
         ex.homeView = new MainView();
+        var jQT = new $.jQT({
+            icon: 'jqtouch.png',
+            statusBar: 'black-translucent',
+            preloadImages: []
+        });
 	});
 
 })(window.ex = window.ex || {});
