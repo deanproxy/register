@@ -1,4 +1,6 @@
 (function(ex) {
+    var jQT;
+
 	 /* alias away the sync method */
     Backbone._sync = Backbone.sync;
 
@@ -137,8 +139,7 @@
      */
 	var AddView = Backbone.View.extend({
         initialize: function() {
-            this.$el = $('#add');
-            this.$el.show();
+            this.$el = $('#add-page');
         },
 
 		render: function() {
@@ -154,6 +155,7 @@
                 variables.expense.deposit = true;
             }
 			this.$el.html(Handlebars.templates.edit(variables));
+            jQT.goTo('#add-page', 'slideup');
 
             $(document).on('click', '#save-btn', $.proxy(function() {
                 var amount = $('#amount').val();
@@ -204,7 +206,8 @@
             this.listenTo(this.total, 'sync', this.onSyncTotal);
 
 
-            $('.add-expense').click($.proxy(function() {
+            // $('#add-button').on('tap', $.proxy(function() {
+            $(document).on('tap', '#add-button', $.proxy(function() {
                 this.index = 0;
                 this.expenses.add(new ex.Expense(), {at:this.index});
                 if (!ex.addView) {
@@ -212,7 +215,6 @@
                 }
                 ex.addView.options.expense = this.expenses.models[0];
                 ex.addView.render();
-                this.$el.hide();
             }, this));
 
             $('#expense-list').empty();
@@ -320,7 +322,7 @@
 
 	$(function() {
         ex.homeView = new MainView();
-        var jQT = new $.jQT({
+        jQT = new $.jQT({
             icon: 'jqtouch.png',
             statusBar: 'black-translucent',
             preloadImages: []
