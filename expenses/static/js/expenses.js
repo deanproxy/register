@@ -91,7 +91,7 @@
 
     var LoginView = Backbone.View.extend({
         initialize: function() {
-            this.$el = $('#content');
+            this.$el = $('#login-page');
             this.login = new ex.Login();
 
             this.listenTo(this.login, 'sync', this.onsync);
@@ -101,30 +101,18 @@
         },
 
         render: function() {
-            this.$el.html(Handlebars.templates.login());
-            this.changePage();
-
-            $('#login-btn').click($.proxy(function(evt) {
+            $(document).on('tap', '#login-btn', $.proxy(function(evt) {
                 this.login.save({
                     username: $('#username').val(),
                     password: $('#password').val()
                 });
-                // $.mobile.loading('show', {
-                //     text: 'Logging in...',
-                //     textVisible: true,
-                //     theme: 'a'
-                // })
-                evt.preventDefault();
             }, this));
         },
 
         onsync: function(data) {
             // $.mobile.loading('hide');
             new MainView();
-        },
-
-        changePage: function() {
-            // $.mobile.changePage('#login');
+            jQT.goTo('#list-page', 'flipright');
         },
 
         onerror: function(model, xhr, options) {
@@ -154,12 +142,13 @@
             } else if (variables.expense.amount) {
                 variables.expense.deposit = true;
             }
-			this.$el.html(Handlebars.templates.edit(variables));
+
+			this.$el.empty().html(Handlebars.templates.edit(variables));
             jQT.goTo('#add-page', 'slideup');
 
-            $(document).on('click', '#save-btn', $.proxy(function() {
+            $(document).on('click', '#save-btn', $.proxy(function(evt) {
                 var amount = $('#amount').val();
-                if ($('#deposit').val() === 'off') {
+                if ($('#deposit').is(':checked') === false) {
                     amount = -amount;
                 }
                 // $.mobile.loading('show', {
@@ -171,21 +160,23 @@
                     description: $('#desc').val(),
                     amount: parseFloat(amount)
                 });
+                jQT.goTo('#list-page', 'slidedown');
             }, this));
 
-            $(document).on('click', '#delete-btn', $.proxy(function() {
+            $(document).on('tap', '#delete-btn', $.proxy(function() {
                 // $.mobile.loading('show', {
                 //     text: 'Deleting expense...',
                 //     textVisible: true,
                 //     theme: 'a'
                 // });
                 this.options.expense.destroy();
+                jQT.goTo('#list-page', 'slidedown');
             }, this));
 		},
 
         destroy: function() {
-            this.$el.hide();
-            $(document).off('click', '#save-btn');
+            $(document).off('tap', '#save-btn');
+            $(document).off('tap', '#delete-btn');
             this.remove();
         }
 	});
@@ -196,7 +187,7 @@
      */
 	var MainView = Backbone.View.extend({
 		initialize: function() {
-            this.$el = $('#content');
+            this.$el = $('#list-page');
 			this.expenses = new ex.Expenses();
 			this.total = new ex.Total();
 
@@ -205,8 +196,6 @@
             this.listenTo(this.expenses, 'error', this.onerror);
             this.listenTo(this.total, 'sync', this.onSyncTotal);
 
-
-            // $('#add-button').on('tap', $.proxy(function() {
             $(document).on('tap', '#add-button', $.proxy(function() {
                 this.index = 0;
                 this.expenses.add(new ex.Expense(), {at:this.index});
@@ -282,9 +271,9 @@
 
 		renderList: function(data) {
             var self = this;
-            $('#content').append(Handlebars.templates.list(data));
+            $('#expense-list').append(Handlebars.templates.list(data));
 
-            $(document).on('click', '.update-expense', function() {
+            $('#expense-list').on('tap', '.update-expense', function() {
                 self.index = $(this).attr('data-expense-index');
                 if (!ex.addView) {
                     ex.addView = new AddView();
@@ -304,6 +293,7 @@
         onerror: function(model, xhr, options) {
             if (xhr.status === 401) {
                 new LoginView();
+                jQT.goTo('#login-page');
             } else {
                 // $.mobile.loading('hide');
                 alert('An error occurred.');
@@ -322,7 +312,7 @@
 
 	$(function() {
         ex.homeView = new MainView();
-        jQT = new $.jQT({
+        ex.jqt = jQT = new $.jQT({
             icon: 'jqtouch.png',
             statusBar: 'black-translucent',
             preloadImages: []
