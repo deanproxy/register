@@ -110,7 +110,6 @@ def expense(request, id=0):
         balance.save()
         status = 201
     elif request.method == 'DELETE':
-        logging.error("I'm fucking deleting, man!")
         expense = get_object_or_404(Expense, pk=id, user=request.user)
         try:
             # Make sure to update balance depending on the transaction type.
