@@ -12,26 +12,25 @@
 	<link rel="apple-touch-icon" href="/static/images/apple-touch-icon.png"/>
 
 	<title>Budget</title>
-  <link rel="stylesheet" type="text/css" href="/css/themes/css/jqtouch.min.css">
-  <link rel="stylesheet" type="text/css" href="/css/budget.css">
+  <link rel="stylesheet" type="text/css" href="/static/css/themes/css/jqtouch.min.css">
+  <link rel="stylesheet" type="text/css" href="/static/css/budget.css">
 
-  <script src="/js/zepto.min.js"></script>
-  <script src="/js/jqt.min.js"></script>
-  <script src="/js/underscore-min.js"></script>
-  <script src="/js/backbone-min.js"></script>
-  <script src="/js/handlebars.runtime-v2.0.0.js"></script>
+  <script src="/static/js/zepto.min.js"></script>
+  <script src="/static/js/zepto.cookie.min.js"></script>
+  <script src="/static/js/jqt.min.js"></script>
+  <script src="/static/js/underscore-min.js"></script>
+  <script src="/static/js/backbone-min.js"></script>
+  <script src="/static/js/handlebars.runtime-v2.0.0.js"></script>
 
-  <script src="/js/application.js"></script>
-  <script src="/js/form.js"></script>
-  <script src="/js/handlebars-helpers.js"></script>
-  <script src="/js/expenses.js"></script>
+  <script src="/static/js/application.js"></script>
+  <script src="/static/js/form.js"></script>
+  <script src="/static/js/handlebars-helpers.js"></script>
+  <script src="/static/js/expenses.js"></script>
 
-  <script src="/js/hbtemplates.js"></script>
+  <script src="/static/js/hbtemplates.js"></script>
 </head>
 
 <body>
-	{% csrf_token %}
-  {% verbatim %}
   <div id="jqt">
       <div id="login-page" class="edgetoedge form">
           <div class="toolbar">
@@ -61,6 +60,5 @@
 
       <div id="add-page" class="edgetoedge form"> </div>
   </div>
-  {% endverbatim %}
 </body>
 </html>

@@ -8,11 +8,8 @@
     Backbone.sync = function(method, model, options) {
         /* only need a token for non-get requests */
         if (method === 'create' || method === 'update' || method === 'delete') {
-            // CSRF token value is in an embedded meta tag 
-            var csrfToken = $("input[name=csrfmiddlewaretoken]").val();
-
             options.beforeSend = function(xhr){
-                xhr.setRequestHeader('X-CSRFToken', csrfToken);
+                xhr.setRequestHeader('X-CSRFToken', $.fn.cookie('csrftoken'));
             };
         }
 
