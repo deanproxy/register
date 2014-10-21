@@ -160,7 +160,7 @@
                     description: $('#desc').val(),
                     amount: parseFloat(amount)
                 });
-                jQT.goTo('#list-page', 'slidedown');
+                jQT.goBack(); // '#list-page', 'slidedown');
             }, this));
 
             $(document).on('tap', '#delete-btn', $.proxy(function() {
@@ -256,13 +256,6 @@
                     // });
                     this.expenses.nextPage();
                 }, this));
-
-                if (ex.addView) {
-                    ex.addView.destroy();
-                    ex.addView = null;
-                    this.$el.show();
-                }
-                // $.mobile.loading('hide');
             } else if (data instanceof ex.Expense) {
                 this.expenses.fetch();
                 this.total.fetch();

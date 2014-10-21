@@ -12,56 +12,55 @@
 	<link rel="apple-touch-icon" href="/static/images/apple-touch-icon.png"/>
 
 	<title>Budget</title>
-    {% css 'themes/css/jqtouch.min.css' %}
-    {% css 'budget.css' %}
+  <link rel="stylesheet" type="text/css" href="/css/themes/css/jqtouch.min.css">
+  <link rel="stylesheet" type="text/css" href="/css/budget.css">
 
-    {% js 'zepto.min.js' %}
-    {% js 'jqt.js' %}
-    {% js 'underscore-min.js' %}
-    {% js 'backbone-min.js' %}
-    {% js 'handlebars.runtime-v2.0.0.js' %}
+  <script src="/js/zepto.min.js"></script>
+  <script src="/js/jqt.min.js"></script>
+  <script src="/js/underscore-min.js"></script>
+  <script src="/js/backbone-min.js"></script>
+  <script src="/js/handlebars.runtime-v2.0.0.js"></script>
 
-    {% js 'application.js' %}
-    {% js 'form.js' %}
-    {% js 'handlebars-helpers.js' %}
-    {% js 'expenses.js' %}
+  <script src="/js/application.js"></script>
+  <script src="/js/form.js"></script>
+  <script src="/js/handlebars-helpers.js"></script>
+  <script src="/js/expenses.js"></script>
 
-    {% js 'hbtemplates.js' %}
-
+  <script src="/js/hbtemplates.js"></script>
 </head>
 
 <body>
 	{% csrf_token %}
-    {% verbatim %}
-    <div id="jqt">
-        <div id="login-page" class="edgetoedge form">
-            <div class="toolbar">
-                <h1>Login</h1>
-            </div>
-            <div id="login-error"> </div>
-            <form name="login" id="login-form" method="post" action="#">
-                <ul class="edit rounded">
-                    <li>
-                        <input type="text" name="username" placeholder="Username" id="username" required>
-                    </li>
-                    <li>
-                        <input type="password" name="password" placeholder="Password" id="password" required>
-                    </li>
-                </ul>
-                <a id="login-btn" class="blueButton">Login</a>
-            </form>
-        </div>
+  {% verbatim %}
+  <div id="jqt">
+      <div id="login-page" class="edgetoedge form">
+          <div class="toolbar">
+              <h1>Login</h1>
+          </div>
+          <div id="login-error"> </div>
+          <form name="login" id="login-form" method="post" action="#">
+              <ul class="edit rounded">
+                  <li>
+                      <input type="text" name="username" placeholder="Username" id="username" required>
+                  </li>
+                  <li>
+                      <input type="password" name="password" placeholder="Password" id="password" required>
+                  </li>
+              </ul>
+              <a id="login-btn" class="blueButton">Login</a>
+          </form>
+      </div>
 
-        <div id="list-page" class="edgetoedge">
-            <div class="toolbar">
-                <h1 id="header">Budget</h1>
-                <a id="add-button" href="#" class="button add slideup">+</a>
-            </div>
-            <ul id="expense-list" class="edgetoedge scroll"></ul>
-        </div>
+      <div id="list-page" class="edgetoedge">
+          <div class="toolbar">
+              <h1 id="header">Budget</h1>
+              <a id="add-button" href="#" class="button add slideup">+</a>
+          </div>
+          <ul id="expense-list" class="edgetoedge scroll"></ul>
+      </div>
 
-        <div id="add-page" class="edgetoedge form"> </div>
-    </div>
-    {% endverbatim %}
+      <div id="add-page" class="edgetoedge form"> </div>
+  </div>
+  {% endverbatim %}
 </body>
 </html>
