@@ -33,26 +33,30 @@ def login_required(function=None, redirect_field_name=None):
     else:
         return _decorator(function)
 
-def _serialize(model):
+def _serialize(model, ignore=[]):
     obj = {}
     field_names = model._meta.get_all_field_names()
     for i in field_names:
+        do_ignore = False
         item = getattr(model, i)
-        if type(item) == datetime.datetime:
-            obj[i] = item.isoformat('T')
-        else:
-            obj[i] = item
+        for ig in ignore:
+            if isinstance(item, ig):
+                do_ignore = True
+        if not do_ignore:
+            if type(item) == datetime.datetime:
+                obj[i] = item.isoformat('T')
+            else:
+                obj[i] = item
     return obj
 
-
-def serialize(models):
+def serialize(models, ignore=[]):
     obj = None
     if type(models) == QuerySet:
         obj = []
         for model in models:
-            obj.append(_serialize(model))
+            obj.append(_serialize(model, ignore))
     else:
-        obj = _serialize(models)
+        obj = _serialize(models, ignore)
 
     return obj
 
@@ -82,8 +86,8 @@ def expense(request, id=0):
 
     if request.method == 'PUT':
         data = json.loads(request.body)
-        expense = get_object_or_404(Expense, pk=id)
-        balance = Balance.objects.get(pk=1)
+        expense = get_object_or_404(Expense, pk=id, user=request.user)
+        balance = Balance.objects.get(user=request.user)
         balance.amount -= expense.amount
 
         expense.description = data['description']
@@ -94,22 +98,23 @@ def expense(request, id=0):
         balance.save()
     elif request.method == 'POST':
         data = json.loads(request.body)
-        expense = Expense(description=data['description'], amount=data['amount'])
+        expense = Expense(description=data['description'], amount=data['amount'], user=request.user)
         expense.save()
         try:
-            balance = Balance.objects.get(pk=1)
+            balance = Balance.objects.get(user=request.user)
         except Balance.DoesNotExist:
             # We're just now starting the app or something happened to the db, create the expense record.
-            balance = Balance.objects.create(amount=0.0)
+            balance = Balance.objects.create(amount=0.0, user=request.user)
 
         balance.amount += expense.amount
         balance.save()
         status = 201
     elif request.method == 'DELETE':
-        expense = get_object_or_404(Expense, pk=id)
+        logging.error("I'm fucking deleting, man!")
+        expense = get_object_or_404(Expense, pk=id, user=request.user)
         try:
             # Make sure to update balance depending on the transaction type.
-            balance = Balance.objects.get(pk=1)
+            balance = Balance.objects.get(user=request.user)
             balance.amount -= expense.amount
             balance.save()
             expense.delete()
@@ -123,7 +128,7 @@ def expense(request, id=0):
             logging.error('expense does not exist: ' + id)
             status = 404
 
-    return HttpResponse(content=json.dumps(serialize(expense)), status=status, content_type='application/json')
+    return HttpResponse(content=json.dumps(serialize(expense, ignore=[auth.models.User])), status=status, content_type='application/json')
 
 
 @login_required
@@ -132,7 +137,7 @@ def total(request):
 
     json_obj = {'amount': 0.0}
     try:
-        balance = Balance.objects.get(pk=1)
+        balance = Balance.objects.get(user=request.user)
     except:
         pass
     else:
@@ -146,12 +151,12 @@ def list(request):
 
     page = int(request.GET.get('page', 1)) - 1
     offset = MAX_RETURNED_EXPENSES * int(page)
-    expenses = Expense.objects.all().order_by('created_at').reverse()[offset:(offset + MAX_RETURNED_EXPENSES)]
-    total = Expense.objects.count()
+    expenses = Expense.objects.filter(user=request.user).order_by('created_at').reverse()[offset:(offset + MAX_RETURNED_EXPENSES)]
+    total = Expense.objects.filter(user=request.user).count()
     remaining = total - (offset + len(expenses))
     pages = math.ceil(float(total) / float(MAX_RETURNED_EXPENSES))
 
-    json_object = {'total': total, 'remaining': remaining, 'pages': pages, 'expenses': serialize(expenses)}
+    json_object = {'total': total, 'remaining': remaining, 'pages': pages, 'expenses': serialize(expenses, ignore=[auth.models.User])}
     return HttpResponse(content=json.dumps(json_object), content_type='application/json')
 
 

@@ -125,24 +125,6 @@
 	var AddView = Backbone.View.extend({
         initialize: function() {
             this.$el = $('#add-page');
-        },
-
-		render: function() {
-			var variables = {
-				expense: this.options.expense.toJSON()
-			};
-
-            /* We don't want to display the - sign when editing. */
-            if (variables.expense.amount < 0) {
-                variables.expense.amount -= variables.expense.amount * 2;
-                variables.expense.deposit = false;
-            } else if (variables.expense.amount) {
-                variables.expense.deposit = true;
-            }
-
-			this.$el.empty().html(Handlebars.templates.edit(variables));
-            jQT.goTo('#add-page', 'slideup');
-
             $(document).on('click', '#save-btn', $.proxy(function(evt) {
                 var amount = $('#amount').val();
                 if ($('#deposit').is(':checked') === false) {
@@ -169,6 +151,23 @@
                 this.options.expense.destroy();
                 jQT.goTo('#list-page', 'slidedown');
             }, this));
+        },
+
+		render: function() {
+			var variables = {
+				expense: this.options.expense.toJSON()
+			};
+
+            /* We don't want to display the - sign when editing. */
+            if (variables.expense.amount < 0) {
+                variables.expense.amount -= variables.expense.amount * 2;
+                variables.expense.deposit = false;
+            } else if (variables.expense.amount) {
+                variables.expense.deposit = true;
+            }
+
+			this.$el.empty().html(Handlebars.templates.edit(variables));
+            jQT.goTo('#add-page', 'slideup');
 		},
 
         destroy: function() {

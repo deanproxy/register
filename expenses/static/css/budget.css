@@ -2,11 +2,11 @@ body {
 	background-color: #ddd;
 }
 
-.negative {
+#jqt ul li small.negative, .negative {
 	color: #c1272d;
 }
 
-.positive {
+#jqt ul li small.positive, .positive {
 	color: #8cc63f;
 }
 
