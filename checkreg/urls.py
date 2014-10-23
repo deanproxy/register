@@ -19,5 +19,7 @@ urlpatterns = patterns('',
     # url(r'^admin/', include(admin.site.urls)),
 	url(r'^$', 'expenses.views.index', name='index_url'),
     url(r'^login/', 'expenses.views.login', name='login_url'),
+    url(r'^logout/', 'expenses.views.logout', name='logout_url'),
+    url(r'^signup/', 'expenses.views.signup', name='signup_url'),
 	url(r'^expenses/', include('expenses.urls'))
 )

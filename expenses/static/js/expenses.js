@@ -1,7 +1,7 @@
 (function(ex) {
     var jQT;
 
-	 /* alias away the sync method */
+    /* alias away the sync method */
     Backbone._sync = Backbone.sync;
 
     /* define a new sync method */
@@ -19,6 +19,18 @@
 
     ex.Login = Backbone.Model.extend({
         urlRoot: '/login/',
+        defaults: {
+            username: '',
+            password: ''
+        }
+    });
+
+    var Logout = Backbone.Model.extend({
+        urlRoot: '/logout/'
+    });
+
+    ex.Signup = Backbone.Model.extend({
+        urlRoot: '/signup/',
         defaults: {
             username: '',
             password: ''
@@ -90,6 +102,7 @@
         initialize: function() {
             this.$el = $('#login-page');
             this.login = new ex.Login();
+            $('#login-error').hide();
 
             this.listenTo(this.login, 'sync', this.onsync);
             this.listenTo(this.login, 'error', this.onerror);
@@ -98,33 +111,103 @@
         },
 
         render: function() {
+            jQT.goTo('#login-page', 'flipright');
             $(document).on('tap', '#login-btn', $.proxy(function(evt) {
                 this.login.save({
                     username: $('#username').val(),
                     password: $('#password').val()
                 });
             }, this));
+
+            $(document).on('click', '#login-signup-btn', $.proxy(function(evt) {
+                new SignupView()
+                this.destroy();
+            }, this));
+
+            this.$el.find('input').val('');
         },
 
         onsync: function(data) {
             // $.mobile.loading('hide');
             new MainView();
             jQT.goTo('#list-page', 'flipright');
+            this.destroy();
         },
 
         onerror: function(model, xhr, options) {
             // $.mobile.loading('hide');
-            $('#login-error').show().html('Incorrect username or password');
+            $('#login-error').show().html('Incorrect username or password.');
+        },
+
+        destroy: function() {
+            $(document).off('tap', '#login-btn');
+            $(document).off('click', '#login-signup-btn');
+        }
+    });
+
+    var SignupView = Backbone.View.extend({
+        initialize: function() {
+            this.$el = $('#signup-page');
+            this.signup = new ex.Signup();
+            this.login = null;
+            $('#signup-error').hide();
+
+            this.listenTo(this.signup, 'sync', this.onsync);
+            this.listenTo(this.signup, 'error', this.onerror);
+
+            this.render();
+        },
+
+        render: function() {
+            $(document).on('tap', '#signup-submit-btn', $.proxy(function(evt) {
+                var password=$('#signup-password').val(),
+                    password2=$('#signup-password2').val();
+
+                this.signup.save({
+                    username: $('#signup-username').val(),
+                    password: password,
+                    password2: password2
+                });
+            }, this));
+
+            $(document).on('click', '#signup-login-btn', $.proxy(function(evt) {
+                new LoginView();
+                this.destroy();
+            }, this));
+
+            this.$el.find('input').val('');
+        },
+
+        onsync: function(data) {
+            new MainView();
+            jQT.goTo('#list-page', 'flipright');
+        },
+
+        onerror: function(model, xhr, options) {
+            var error;
+            try {
+                error = JSON.parse(xhr.response);
+            } catch(e) {
+                error = {errors:{'error':"An unexpected error occured"}};
+            }
+            this.$el.find('#signup-error').show().html(Handlebars.templates.error(error));
+        },
+
+        destroy: function() {
+            $(document).off('tap', '#signup-submit-btn');
+            $(document).off('click', '#signup-login-btn');
         }
     });
 
     /**
      * Handles adding and updating an expense.
-     * @type {Object|*|void|e.extend|extend|S.extend}
      */
 	var AddView = Backbone.View.extend({
-        initialize: function() {
+        initialize: function(options) {
             this.$el = $('#add-page');
+            this.$el.find("#error-msg").hide();
+            this.expense = options.expense;
+
             $(document).on('click', '#save-btn', $.proxy(function(evt) {
                 var amount = $('#amount').val();
                 if ($('#deposit').is(':checked') === false) {
@@ -135,11 +218,10 @@
                 //     textVisible: true,
                 //     theme: 'a'
                 // });
-                this.options.expense.save({
+                this.expense.save({
                     description: $('#desc').val(),
-                    amount: parseFloat(amount)
+                    amount: amount ? parseFloat(amount) : ''
                 });
-                jQT.goBack(); // '#list-page', 'slidedown');
             }, this));
 
             $(document).on('tap', '#delete-btn', $.proxy(function() {
@@ -148,14 +230,15 @@
                 //     textVisible: true,
                 //     theme: 'a'
                 // });
-                this.options.expense.destroy();
-                jQT.goTo('#list-page', 'slidedown');
+                this.expense.destroy();
             }, this));
+
+            this.render();
         },
 
 		render: function() {
 			var variables = {
-				expense: this.options.expense.toJSON()
+				expense: this.expense.toJSON()
 			};
 
             /* We don't want to display the - sign when editing. */
@@ -166,7 +249,7 @@
                 variables.expense.deposit = true;
             }
 
-			this.$el.empty().html(Handlebars.templates.edit(variables));
+			this.$el.find('#update-expense').empty().html(Handlebars.templates.edit(variables));
             jQT.goTo('#add-page', 'slideup');
 		},
 
@@ -179,7 +262,6 @@
 
     /**
      * The main view, which displays a list of expenses.
-     * @type {Object|*|void|e.extend|extend|S.extend}
      */
 	var MainView = Backbone.View.extend({
 		initialize: function() {
@@ -194,12 +276,16 @@
 
             $(document).on('tap', '#add-button', $.proxy(function() {
                 this.index = 0;
-                this.expenses.add(new ex.Expense(), {at:this.index});
-                if (!ex.addView) {
-                    ex.addView = new AddView();
-                }
-                ex.addView.options.expense = this.expenses.models[0];
-                ex.addView.render();
+                this.expenses.add(new ex.Expense(), {at:0});
+                new AddView({
+                    expense: this.expenses.models[0]
+                });
+            }, this));
+
+            $(document).on('click', '#logout-btn', $.proxy(function(evt) {
+                new Logout().save();
+                new LoginView();
+                this.destroy();
             }, this));
 
             $('#expense-list').empty();
@@ -256,6 +342,7 @@
                 this.expenses.fetch();
                 this.total.fetch();
             }
+            jQT.goTo('#list-page');
         },
 
 		renderList: function(data) {
@@ -264,11 +351,9 @@
 
             $('#expense-list').on('tap', '.update-expense', function() {
                 self.index = $(this).attr('data-expense-index');
-                if (!ex.addView) {
-                    ex.addView = new AddView();
-                }
-                ex.addView.options.expense = self.expenses.models[self.index];
-                ex.addView.render();
+                new AddView({
+                    expense: self.expenses.models[self.index]
+                });
             });
 			return this;
 		},
@@ -277,15 +362,21 @@
             $('#expense-list').empty();
             this.expenses.fetch();
             this.total.fetch();
+            jQT.goTo('#list-page');
         },
 
         onerror: function(model, xhr, options) {
             if (xhr.status === 401) {
                 new LoginView();
-                jQT.goTo('#login-page');
             } else {
                 // $.mobile.loading('hide');
-                alert('An error occurred.');
+                var error;
+                try {
+                    error = JSON.parse(xhr.response);
+                } catch(e) {
+                    error = {errors:{'error':"An unexpected error occured"}};
+                }
+                $('#error-msg').show().html(Handlebars.templates.error(error));
             }
         },
 
@@ -296,6 +387,11 @@
                     // $.mobile.changePage('#home');
                 }
             });
+        },
+
+        destroy: function() {
+            $(document).off('tap', '#add-button');
+            $(document).off('click', "#logout-btn");
         }
 	});
 

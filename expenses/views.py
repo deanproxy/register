@@ -5,11 +5,13 @@ import math
 
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
-from expenses.forms import ExpenseForm
+from expenses.forms import ExpenseForm, SignupForm
 from expenses.models import Expense, Balance
 from django.core import serializers
+from django.db import IntegrityError
 from django.db.models.query import QuerySet
 from django.contrib import auth
+from django.forms.models import inlineformset_factory
 
 MAX_RETURNED_EXPENSES = 30
 
@@ -70,7 +72,33 @@ def login(request):
         status = 200
 
     data['password'] = ''
-    return HttpResponse(status=status, content=json.dumps(data))
+    return HttpResponse(status=status, content=json.dumps(data), content_type="text/json")
+
+@login_required
+def logout(request):
+    auth.logout(request)
+    return HttpResponse(status=200)
+
+def signup(request):
+    status = 406
+    response = None
+    data = json.loads(request.body)
+    form = SignupForm(data)
+    if form.is_valid():
+        try:
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            auth.models.User.objects.create_user(username, password=password)
+            user = auth.authenticate(**form.cleaned_data)
+            auth.login(request, user)
+        except IntegrityError:
+            response = {'errors':{'username':"Username is already taken."}}
+        else:
+            status = 201
+    else:
+        response = {'errors':form.errors}
+
+    return HttpResponse(status=status, content_type="text/json", content=json.dumps(response))
 
 
 def index(request):
@@ -81,34 +109,43 @@ def index(request):
 def expense(request, id=0):
     """ Get or Create/Update an expense """
 
-    status = 200
+    status = 400
     expense = None
+    errors = {}
 
     if request.method == 'PUT':
         data = json.loads(request.body)
         expense = get_object_or_404(Expense, pk=id, user=request.user)
-        balance = Balance.objects.get(user=request.user)
-        balance.amount -= expense.amount
+        form = ExpenseForm(data, instance=expense)
+        if form.is_valid():
+            balance = Balance.objects.get(user=request.user)
+            # Reset balance because we're updating an expense.
+            balance.amount -= expense.amount
 
-        expense.description = data['description']
-        expense.amount = data['amount']
-        expense.save()
-
-        balance.amount += expense.amount
-        balance.save()
+            form.save()
+            balance.amount += expense.amount
+            balance.save()
+            status = 200
+        else:
+            errors = {'errors':form.errors}
     elif request.method == 'POST':
         data = json.loads(request.body)
-        expense = Expense(description=data['description'], amount=data['amount'], user=request.user)
-        expense.save()
-        try:
-            balance = Balance.objects.get(user=request.user)
-        except Balance.DoesNotExist:
-            # We're just now starting the app or something happened to the db, create the expense record.
-            balance = Balance.objects.create(amount=0.0, user=request.user)
+        form = ExpenseForm(data)
+        if form.is_valid():
+            form.cleaned_data['user'] = request.user
+            expense = Expense(**form.cleaned_data)
+            expense.save()
+            try:
+                balance = Balance.objects.get(user=request.user)
+            except Balance.DoesNotExist:
+                # This user doesn't have a balance yet, create one.
+                balance = Balance.objects.create(amount=0.0, user=request.user)
 
-        balance.amount += expense.amount
-        balance.save()
-        status = 201
+            balance.amount += expense.amount
+            balance.save()
+            status = 201
+        else:
+            errors = {'errors':form.errors}
     elif request.method == 'DELETE':
         expense = get_object_or_404(Expense, pk=id, user=request.user)
         try:
@@ -127,7 +164,8 @@ def expense(request, id=0):
             logging.error('expense does not exist: ' + id)
             status = 404
 
-    return HttpResponse(content=json.dumps(serialize(expense, ignore=[auth.models.User])), status=status, content_type='application/json')
+    response = errors if errors else serialize(expense, ignore=[auth.models.User])
+    return HttpResponse(content=json.dumps(response), status=status, content_type='application/json')
 
 
 @login_required

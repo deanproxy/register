@@ -1,23 +1,15 @@
-<div class="toolbar">
-    <h1>Edit Expense</h1>
-    <a href="#" id="cancel-btn" class="back button slidedown">Cancel</a>
-    <a href="#" id="save-btn" class="save button">Save</a>
-</div>
-
-<form name="update" id="update-expense" method="post" action="#">
-  <ul id="update-list" class="edit rounded">
-      <li>
-          <input type="text" name="description" class="required" placeholder="Item Description" id="desc" value="{{expense.description}}">
-      </li>
-      <li>
-          <input type="number" name="amount" placeholder="$0.00" class="required number" id="amount" step="0.01" value="{{expense.amount}}">
-      </li>
-      <li>
-          <input type="checkbox" id="deposit" name="deposit" class="toggle" {{#if expense.deposit}}checked{{/if}}>
-          <label for="deposit">Deposit?</label>
-      </li>
-  </ul>
-  {{#if expense.amount}}
-      <a href="#" id="delete-btn" class="redButton">Delete Expense</a>
-  {{/if}}
-</form>
+<ul id="update-list" class="edit rounded">
+  <li>
+    <input type="text" name="description" class="required" placeholder="Item Description" id="desc" value="{{expense.description}}">
+  </li>
+  <li>
+    <input type="number" name="amount" placeholder="$0.00" class="required number" id="amount" step="0.01" value="{{expense.amount}}">
+  </li>
+  <li>
+    <input type="checkbox" id="deposit" name="deposit" class="toggle" {{#if expense.deposit}}checked{{/if}}>
+    <label for="deposit">Deposit?</label>
+  </li>
+</ul>
+{{#if expense.amount}}
+  <a href="#" id="delete-btn" class="redButton">Delete Expense</a>
+{{/if}}

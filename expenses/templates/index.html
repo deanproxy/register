@@ -32,33 +32,59 @@
 
 <body>
   <div id="jqt">
-      <div id="login-page" class="edgetoedge form">
-          <div class="toolbar">
-              <h1>Login</h1>
-          </div>
-          <div id="login-error"> </div>
-          <form name="login" id="login-form" method="post" action="#">
-              <ul class="edit rounded">
-                  <li>
-                      <input type="text" name="username" placeholder="Username" id="username" required>
-                  </li>
-                  <li>
-                      <input type="password" name="password" placeholder="Password" id="password" required>
-                  </li>
-              </ul>
-              <a id="login-btn" class="blueButton">Login</a>
-          </form>
+    <div id="login-page" class="edgetoedge form">
+      <div class="toolbar">
+        <h1>Login</h1>
+        <a href="#signup-page" id="login-signup-btn" class="button flipright">Signup</a>
       </div>
+      <div id="login-error" class="error-msg"> </div>
+      <form name="login" id="login-form" method="post" action="#">
+        <ul class="edit rounded">
+          <li>
+            <input type="text" name="username" placeholder="Username" id="username" required>
+          </li>
+          <li>
+            <input type="password" name="password" placeholder="Password" id="password" required>
+          </li>
+        </ul>
+        <a id="login-btn" class="blueButton">Login</a>
+      </form>
+    </div>
 
-      <div id="list-page" class="edgetoedge">
-          <div class="toolbar">
-              <h1 id="header">Budget</h1>
-              <a id="add-button" href="#" class="button add slideup">+</a>
-          </div>
-          <ul id="expense-list" class="edgetoedge scroll"></ul>
+    <div id="signup-page" class="edgetoedge form">
+      <div class="toolbar">
+        <h1>Signup</h1>
+        <a href="#login-page" id="signup-login-btn" class="button flipleft">Login</a> 
       </div>
+      <h2>Want to start keeping track of your expenses? Create an account!</h2>
+      <div class="error-msg" id="signup-error"></div>
+      <ul class="edit rounded">
+        <li><input type="text" name="username" placeholder="Your e-mail address" id="signup-username" required></li>
+        <li><input type="text" name="password" placeholder="Password" id="signup-password" required></li>
+        <li><input type="text" name="password2" placeholder="Confirm Password" id="signup-password2" required></li>
+      </ul>
+      <a id="signup-submit-btn" href="#" class="blueButton">Create Account</a>
+    </div>
 
-      <div id="add-page" class="edgetoedge form"> </div>
+    <div id="list-page" class="edgetoedge">
+      <div class="toolbar">
+        <a id="logout-btn" href="#" class="button cancel">Logout</a>
+        <h1 id="header">Budget</h1>
+        <a id="add-button" href="#" class="button add slideup">+</a>
+      </div>
+      <ul id="expense-list" class="edgetoedge scroll"></ul>
+    </div>
+
+    <div id="add-page" class="edgetoedge form"> 
+      <div class="toolbar">
+        <h1>Edit Expense</h1>
+        <a href="#" id="cancel-btn" class="back button slidedown">Cancel</a>
+        <a href="#" id="save-btn" class="save button">Save</a>
+      </div>
+      <div class="error-msg" id="error-msg"></div>
+      <form name="update" id="update-expense" method="post" action="#">
+      </form>
+    </div>
   </div>
 </body>
 </html>
