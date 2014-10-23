@@ -202,7 +202,7 @@
     /**
      * Handles adding and updating an expense.
      */
-	var AddView = Backbone.View.extend({
+    var AddView = Backbone.View.extend({
         initialize: function(options) {
             this.$el = $('#add-page');
             this.$el.find("#error-msg").hide();
@@ -236,10 +236,10 @@
             this.render();
         },
 
-		render: function() {
-			var variables = {
-				expense: this.expense.toJSON()
-			};
+        render: function() {
+            var variables = {
+                expense: this.expense.toJSON()
+            };
 
             /* We don't want to display the - sign when editing. */
             if (variables.expense.amount < 0) {
@@ -249,25 +249,25 @@
                 variables.expense.deposit = true;
             }
 
-			this.$el.find('#update-expense').empty().html(Handlebars.templates.edit(variables));
+            this.$el.find('#update-expense').empty().html(Handlebars.templates.edit(variables));
             jQT.goTo('#add-page', 'slideup');
-		},
+        },
 
         destroy: function() {
             $(document).off('tap', '#save-btn');
             $(document).off('tap', '#delete-btn');
             this.remove();
         }
-	});
+    });
 
     /**
      * The main view, which displays a list of expenses.
      */
-	var MainView = Backbone.View.extend({
-		initialize: function() {
+    var MainView = Backbone.View.extend({
+        initialize: function() {
             this.$el = $('#list-page');
-			this.expenses = new ex.Expenses();
-			this.total = new ex.Total();
+            this.expenses = new ex.Expenses();
+            this.total = new ex.Total();
 
             this.listenTo(this.expenses, 'sync', this.onsync);
             this.listenTo(this.expenses, 'destroy', this.ondestroy);
@@ -289,22 +289,9 @@
             }, this));
 
             $('#expense-list').empty();
-            this.expenses.fetch({
-                success: $.proxy(function() {
-                    this.total.fetch({
-                        success: function() {
-                            //  $("#expense-list").listview({
-                            //     autodividers: true,
-                            //     autodividersSelector: function (li) {
-                            //         var date = new Date(Date.parse(li.attr("data-date")));
-                            //         return date.getMonth() + '/' + date.getDate() + '/' + date.getFullYear();
-                            //     }
-                            // }).listview("refresh");
-                        }
-                    });
-                }, this)
-            });
-		},
+            this.expenses.fetch();
+            this.total.fetch();
+        },
 
         onSyncTotal: function(data) {
             var variables = {
@@ -345,7 +332,7 @@
             jQT.goTo('#list-page');
         },
 
-		renderList: function(data) {
+        renderList: function(data) {
             var self = this;
             $('#expense-list').append(Handlebars.templates.list(data));
 
@@ -355,8 +342,8 @@
                     expense: self.expenses.models[self.index]
                 });
             });
-			return this;
-		},
+            return this;
+        },
 
         ondestroy: function(model, collection, options) {
             $('#expense-list').empty();
@@ -393,15 +380,15 @@
             $(document).off('tap', '#add-button');
             $(document).off('click', "#logout-btn");
         }
-	});
+    });
 
-	$(function() {
+    $(function() {
         ex.homeView = new MainView();
         ex.jqt = jQT = new $.jQT({
             icon: 'jqtouch.png',
             statusBar: 'black-translucent',
             preloadImages: []
         });
-	});
+    });
 
 })(window.ex = window.ex || {});
