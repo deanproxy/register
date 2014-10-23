@@ -29,10 +29,13 @@
     });
 
     var lastDate;
-    Handlebars.registerHelper('separator', function(date) {
+    Handlebars.registerHelper('separator', function(date, index) {
         var html = '';
         var currentDate = new Date(date).toDateString();
-        if (currentDate != lastDate) {
+        if (index === 0) {
+            lastDate = undefined;
+        }
+        if (currentDate !== lastDate) {
             html = '<li class="sep">' + currentDate + '</li>';
             lastDate = currentDate;
         }

@@ -13,7 +13,7 @@ from django.db.models.query import QuerySet
 from django.contrib import auth
 from django.forms.models import inlineformset_factory
 
-MAX_RETURNED_EXPENSES = 30
+MAX_RETURNED_EXPENSES = 30 
 
 def login_required(function=None, redirect_field_name=None):
     """
