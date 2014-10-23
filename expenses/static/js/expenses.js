@@ -37,65 +37,65 @@
         }
     });
 
-	ex.Expense = Backbone.Model.extend({
-		urlRoot: '/expenses/',
-		defaults: {
-			created_at: '',
-			description: ''
-		}
-	});
+    ex.Expense = Backbone.Model.extend({
+        urlRoot: '/expenses/',
+        defaults: {
+            created_at: '',
+            description: ''
+        }
+    });
 
-	ex.Total = Backbone.Model.extend({
-		urlRoot: '/expenses/total/',
-		defaults: {
-			amount: 0.0
-		}
-	});
+    ex.Total = Backbone.Model.extend({
+        urlRoot: '/expenses/total/',
+        defaults: {
+            amount: 0.0
+        }
+    });
 
-	ex.Expenses = Backbone.Collection.extend({
+    ex.Expenses = Backbone.Collection.extend({
         model: ex.Expense,
 
-		url: function() {
-			return '/expenses/list/' + '?' + $.param({page: this.page});
-		},
+        url: function() {
+            return '/expenses/list/' + '?' + $.param({page: this.page});
+        },
 
-		initialize: function() {
-			this.page = 1;
-		},
+        initialize: function() {
+            this.page = 1;
+        },
 
-		fetch: function(options) {
-			options || (options = {});
-			this.trigger('fetching');
-			var success = options.success;
-			options.success = $.proxy(function(resp) {
-				this.trigger('fetched');
-				if (success) {
-					success(this, resp);
-				}
-			}, this);
-			Backbone.Collection.prototype.fetch.call(this, options);
-		},
+        fetch: function(options) {
+            options || (options = {});
+            this.trigger('fetching');
+            var success = options.success;
+            options.success = $.proxy(function(resp) {
+                this.trigger('fetched');
+                if (success) {
+                    success(this, resp);
+                }
+            }, this);
+            Backbone.Collection.prototype.fetch.call(this, options);
+        },
 
-		parse: function(resp) {
-			this.total = resp.total;
-			this.remaining = resp.remaining;
-			this.pages = resp.pages;
-			return resp.expenses;
-		},
+        parse: function(resp) {
+            this.total = resp.total;
+            this.remaining = resp.remaining;
+            this.pages = resp.pages;
+            return resp.expenses;
+        },
 
-		nextPage: function(options) {
-			if (this.page+1 <= this.pages) {
-				this.page = this.page + 1;
-				this.fetch(options);
-			}
-		},
+        nextPage: function(options) {
+            if (this.page+1 <= this.pages) {
+                this.page = this.page + 1;
+                this.fetch(options);
+            }
+        },
 
-		prevPage: function(options) {
-			if (this.page-1 >= 1) {
-				this.page = this.page - 1;
-				this.fetch(options);
-			}
-		}
+        prevPage: function(options) {
+            if (this.page-1 >= 1) {
+                this.page = this.page - 1;
+                this.fetch(options);
+            }
+        }
 	});
 
     var LoginView = Backbone.View.extend({
