@@ -96,7 +96,7 @@
                 this.fetch(options);
             }
         }
-	});
+    });
 
     var LoginView = Backbone.View.extend({
         initialize: function() {
