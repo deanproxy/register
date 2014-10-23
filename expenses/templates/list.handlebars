@@ -1,5 +1,6 @@
 {{#each expenses}}
   {{#if description}}
+    {{separator created_at}}
     <li data-date="{{created_at}}" class="slideright arrow">
       <a href="#" class="update-expense" data-expense-index="{{@index}}">
         {{description}} <small class="counter {{amountType amount}}">{{formatCurrency amount}}</small>

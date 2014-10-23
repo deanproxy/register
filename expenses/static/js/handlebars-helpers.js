@@ -1,5 +1,4 @@
 (function(ex) {
-
     ex.formatCurrency = function(num) {
         if (isNaN(num))
             num = "0";
@@ -29,4 +28,14 @@
         return html;
     });
 
+    var lastDate;
+    Handlebars.registerHelper('separator', function(date) {
+        var html = '';
+        var currentDate = new Date(date).toDateString();
+        if (currentDate != lastDate) {
+            html = '<li class="sep">' + currentDate + '</li>';
+            lastDate = currentDate;
+        }
+        return new Handlebars.SafeString(html);
+    });
 })(window.ex = window.ex || {});
