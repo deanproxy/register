@@ -3,3 +3,4 @@
 .DS_Store
 *.pyc
 hbtemplates.js
+*checkreg/static/
