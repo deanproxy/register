@@ -25,9 +25,13 @@ if DEBUG:
 else:
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            # 'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            # 'OPTIONS': {
+                # 'read_default_file': '/var/www/siteconfigs/checkreg/postgres.cnf'
+            # }
+            'ENGINE': 'django.db.backends.mysql',
             'OPTIONS': {
-                'read_default_file': '/var/www/siteconfigs/checkreg/postgres.cnf'
+                'read_default_file': '/var/www/siteconfigs/checkreg/mysql.cnf'
             }
         }
     }
