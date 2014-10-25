@@ -152,7 +152,6 @@
         },
 
         onsync: function(data) {
-            new MainView();
             jQT.goTo('#list-page', 'flipright');
             this.destroy();
         },
@@ -201,7 +200,6 @@
         },
 
         onsync: function(data) {
-            new MainView();
             jQT.goTo('#list-page', 'flipright');
         },
 
@@ -297,6 +295,7 @@
                 new Logout().save();
                 new LoginView();
                 this.destroy();
+                evt.preventDefault();
             }, this));
 
             $('#expense-list').empty();

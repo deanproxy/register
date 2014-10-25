@@ -81,3 +81,7 @@ ul li a.active {
     position: absolute;
     z-index: 99;
 }
+#jqt .toolbar .left {
+    left: 10px;
+    right: auto;
+}
