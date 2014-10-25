@@ -334,6 +334,7 @@
 
                 if (this.addView) {
                     this.addView.destroy();
+                    this.addView = null;
                 }
                 jQT.goTo('#list-page');
             } else if (data instanceof ex.Expense) {
