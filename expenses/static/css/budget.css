@@ -69,3 +69,15 @@ ul li a.active {
     background: 0;
     text-shadow: none;
 }
+
+#loading {
+    width: 48px;
+    height: 48px;
+    padding: 10px;
+    background: #FFF url('/static/images/loading.gif') 10px 10px no-repeat;
+    border: 2px solid #000;
+    border-radius: 10px;
+    display: none;
+    position: absolute;
+    z-index: 99;
+}

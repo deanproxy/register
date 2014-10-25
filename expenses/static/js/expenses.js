@@ -6,11 +6,35 @@
 
     /* define a new sync method */
     Backbone.sync = function(method, model, options) {
+        var topPos = ($(window).height()/2)-30;
+        var leftPos = ($(window).width()/2)-30;
+        $('#loading').css({top:topPos+'px', left:leftPos+'px'}).show();
+
         /* only need a token for non-get requests */
         if (method === 'create' || method === 'update' || method === 'delete') {
             options.beforeSend = function(xhr){
                 xhr.setRequestHeader('X-CSRFToken', $.fn.cookie('csrftoken'));
             };
+        }
+
+        if (options.success) {
+            var success = options.success;
+        }
+        if (options.error) {
+            var error = options.error;
+        }
+
+        options.success = function(model, collection, options) {
+            $('#loading').hide();
+            if (success) {
+                success(model, collection, options);
+            }
+        }
+        options.error = function(model, collection, options) {
+            $('#loading').hide();
+            if (error) {
+                error(model, collection, options);
+            }
         }
 
         /* proxy the call to the old sync method */
@@ -128,14 +152,12 @@
         },
 
         onsync: function(data) {
-            // $.mobile.loading('hide');
             new MainView();
             jQT.goTo('#list-page', 'flipright');
             this.destroy();
         },
 
         onerror: function(model, xhr, options) {
-            // $.mobile.loading('hide');
             $('#login-error').show().html('Incorrect username or password.');
         },
 
@@ -213,11 +235,6 @@
                 if ($('#deposit').is(':checked') === false) {
                     amount = -amount;
                 }
-                // $.mobile.loading('show', {
-                //     text: 'Saving expense...',
-                //     textVisible: true,
-                //     theme: 'a'
-                // });
                 this.expense.save({
                     description: $('#desc').val(),
                     amount: amount ? parseFloat(amount) : ''
@@ -225,11 +242,6 @@
             }, this));
 
             $(document).on('tap', '#delete-btn', $.proxy(function() {
-                // $.mobile.loading('show', {
-                //     text: 'Deleting expense...',
-                //     textVisible: true,
-                //     theme: 'a'
-                // });
                 this.expense.destroy();
             }, this));
 
@@ -318,11 +330,6 @@
                 };
                 this.renderList(variables);
                 $(document).on('click', '#more-expenses', $.proxy(function() {
-                    // $.mobile.loading('show', {
-                    //     text: 'Loading more',
-                    //     textVisible: true,
-                    //     theme: 'a'
-                    // });
                     this.expenses.nextPage();
                 }, this));
             } else if (data instanceof ex.Expense) {
@@ -356,7 +363,6 @@
             if (xhr.status === 401) {
                 new LoginView();
             } else {
-                // $.mobile.loading('hide');
                 var error;
                 try {
                     error = JSON.parse(xhr.response);
