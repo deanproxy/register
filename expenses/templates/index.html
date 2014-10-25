@@ -5,29 +5,30 @@
   <meta charset="utf-8">
   <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
-
-  <link rel="apple-touch-startup-image" href="/static/images/apple-touch-startup-image.png"/>
-  <link rel="apple-touch-icon" href="/static/images/apple-touch-icon.png"/>
 
   <title>Budget</title>
-  <link rel="stylesheet" type="text/css" href="/static/css/themes/css/jqtouch.min.css">
-  <link rel="stylesheet" type="text/css" href="/static/css/budget.css">
 
-  <script src="/static/js/zepto.min.js"></script>
-  <script src="/static/js/zepto.cookie.min.js"></script>
-  <script src="/static/js/jqt.min.js"></script>
-  <script src="/static/js/underscore-min.js"></script>
-  <script src="/static/js/backbone-min.js"></script>
-  <script src="/static/js/handlebars.runtime-v2.0.0.js"></script>
+  {% if DEBUG %}
+    <link rel="stylesheet" type="text/css" href="/static/css/themes/css/jqtouch.min.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/budget.css">
 
-  <script src="/static/js/application.js"></script>
-  <script src="/static/js/form.js"></script>
-  <script src="/static/js/handlebars-helpers.js"></script>
-  <script src="/static/js/expenses.js"></script>
+    <script src="/static/js/zepto.min.js"></script>
+    <script src="/static/js/zepto.cookie.min.js"></script>
+    <script src="/static/js/jqt.min.js"></script>
+    <script src="/static/js/underscore-min.js"></script>
+    <script src="/static/js/backbone-min.js"></script>
+    <script src="/static/js/handlebars.runtime-v2.0.0.js"></script>
 
-  <script src="/static/js/hbtemplates.js"></script>
+    <script src="/static/js/application.js"></script>
+    <script src="/static/js/form.js"></script>
+    <script src="/static/js/handlebars-helpers.js"></script>
+    <script src="/static/js/expenses.js"></script>
+
+    <script src="/static/js/hbtemplates.js"></script>
+  {% else %}
+    <link rel="stylesheet" type="text/css" href="/static/global.css">
+    <script src="/static/global.js"></script>
+  {% endif %}
 </head>
 
 <body>

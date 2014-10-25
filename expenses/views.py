@@ -12,6 +12,7 @@ from django.db import IntegrityError
 from django.db.models.query import QuerySet
 from django.contrib import auth
 from django.forms.models import inlineformset_factory
+from django.views.decorators.csrf import csrf_protect
 
 MAX_RETURNED_EXPENSES = 30 
 
@@ -101,6 +102,7 @@ def signup(request):
     return HttpResponse(status=status, content_type="text/json", content=json.dumps(response))
 
 
+@csrf_protect
 def index(request):
     return render(request, 'index.html')
 

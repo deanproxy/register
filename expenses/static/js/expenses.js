@@ -266,9 +266,8 @@
         },
 
         destroy: function() {
-            $(document).off('tap', '#save-btn');
+            $(document).off('click', '#save-btn');
             $(document).off('tap', '#delete-btn');
-            this.remove();
         }
     });
 
@@ -289,7 +288,7 @@
             $(document).on('tap', '#add-button', $.proxy(function() {
                 this.index = 0;
                 this.expenses.add(new ex.Expense(), {at:0});
-                new AddView({
+                this.addView = new AddView({
                     expense: this.expenses.models[0]
                 });
             }, this));
@@ -332,11 +331,15 @@
                 $(document).on('click', '#more-expenses', $.proxy(function() {
                     this.expenses.nextPage();
                 }, this));
+
+                if (this.addView) {
+                    this.addView.destroy();
+                }
+                jQT.goTo('#list-page');
             } else if (data instanceof ex.Expense) {
                 this.expenses.fetch();
                 this.total.fetch();
             }
-            jQT.goTo('#list-page');
         },
 
         renderList: function(data) {
@@ -345,7 +348,7 @@
 
             $('#expense-list').on('tap', '.update-expense', function() {
                 self.index = $(this).attr('data-expense-index');
-                new AddView({
+                this.addView = new AddView({
                     expense: self.expenses.models[self.index]
                 });
             });
@@ -375,11 +378,7 @@
 
         changePage: function() {
             this.total.fetch();
-            this.expenses.fetch({
-                success: function() {
-                    // $.mobile.changePage('#home');
-                }
-            });
+            this.expenses.fetch();
         },
 
         destroy: function() {
