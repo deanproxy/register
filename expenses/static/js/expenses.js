@@ -388,7 +388,7 @@
     });
 
     $(function() {
-        ex.homeView = new MainView();
+        new MainView();
         ex.jqt = jQT = new $.jQT({
             icon: 'jqtouch.png',
             statusBar: 'black-translucent',

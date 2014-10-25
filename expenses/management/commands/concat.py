@@ -28,8 +28,8 @@ class Command(BaseCommand):
             'hbtemplates.js',
         )
         css_files = (
-            'budget.css',
             'themes/css/jqtouch.css',
+            'budget.css',
         )
 
         with open(settings.SITE_ROOT + '/static/global.js', 'w') as outfile:
