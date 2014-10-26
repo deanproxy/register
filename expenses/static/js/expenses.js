@@ -132,11 +132,11 @@
             this.listenTo(this.login, 'error', this.onerror);
 
             this.render();
+            jQT.goTo('#login-page', 'flipleft');
         },
 
         render: function() {
-            jQT.goTo('#login-page', 'flipright');
-            $(document).on('tap', '#login-btn', $.proxy(function(evt) {
+            $(document).on('click', '#login-btn', $.proxy(function(evt) {
                 this.login.save({
                     username: $('#username').val(),
                     password: $('#password').val()
@@ -161,7 +161,7 @@
         },
 
         destroy: function() {
-            $(document).off('tap', '#login-btn');
+            $(document).off('click', '#login-btn');
             $(document).off('click', '#login-signup-btn');
         }
     });
@@ -177,10 +177,11 @@
             this.listenTo(this.signup, 'error', this.onerror);
 
             this.render();
+            jQT.goTo('#signup-page', 'flipright');
         },
 
         render: function() {
-            $(document).on('tap', '#signup-submit-btn', $.proxy(function(evt) {
+            $(document).on('click', '#signup-submit-btn', $.proxy(function(evt) {
                 var password=$('#signup-password').val(),
                     password2=$('#signup-password2').val();
 
@@ -214,7 +215,7 @@
         },
 
         destroy: function() {
-            $(document).off('tap', '#signup-submit-btn');
+            $(document).off('click', '#signup-submit-btn');
             $(document).off('click', '#signup-login-btn');
         }
     });
@@ -239,7 +240,7 @@
                 });
             }, this));
 
-            $(document).on('tap', '#delete-btn', $.proxy(function() {
+            $(document).on('click', '#delete-btn', $.proxy(function() {
                 this.expense.destroy();
             }, this));
 
@@ -265,7 +266,7 @@
 
         destroy: function() {
             $(document).off('click', '#save-btn');
-            $(document).off('tap', '#delete-btn');
+            $(document).off('click', '#delete-btn');
         }
     });
 
@@ -283,7 +284,7 @@
             this.listenTo(this.expenses, 'error', this.onerror);
             this.listenTo(this.total, 'sync', this.onSyncTotal);
 
-            $(document).on('tap', '#add-button', $.proxy(function() {
+            $(document).on('click', '#add-button', $.proxy(function() {
                 this.index = 0;
                 this.expenses.add(new ex.Expense(), {at:0});
                 this.addView = new AddView({
@@ -346,7 +347,7 @@
             var self = this;
             $('#expense-list').append(Handlebars.templates.list(data));
 
-            $('#expense-list').on('tap', '.update-expense', function() {
+            $('#expense-list').on('click', '.update-expense', function() {
                 self.index = $(this).attr('data-expense-index');
                 this.addView = new AddView({
                     expense: self.expenses.models[self.index]
@@ -382,7 +383,7 @@
         },
 
         destroy: function() {
-            $(document).off('tap', '#add-button');
+            $(document).off('click', '#add-button');
             $(document).off('click', "#logout-btn");
         }
     });
