@@ -85,3 +85,7 @@ ul li a.active {
     left: 10px;
     right: auto;
 }
+#jqt .toolbar .primary {
+    background-image: -webkit-linear-gradient(top, #72a6ec, #458ae6 50%, #2f7ce3 51%, #1d6fdb);
+    background-image: linear-gradient(top, #72a6ec, #458ae6 50%, #2f7ce3 51%, #1d6fdb);
+}

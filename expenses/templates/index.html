@@ -47,7 +47,8 @@
     <div id="login-page" class="edgetoedge form">
       <div class="toolbar">
         <h1>Login</h1>
-        <a href="#" id="login-signup-btn" class="button flipright">Signup</a>
+        <a href="#" id="login-signup-btn" class="left button flipright">Signup</a>
+        <a id="login-btn" class="button primary">Login</a>
       </div>
       <div id="login-error" class="error-msg"> </div>
       <form name="login" id="login-form" method="post" action="#">
@@ -59,30 +60,31 @@
             <input type="password" name="password" placeholder="Password" id="password" required>
           </li>
         </ul>
-        <a id="login-btn" class="blueButton">Login</a>
       </form>
     </div>
 
     <div id="signup-page" class="edgetoedge form">
       <div class="toolbar">
         <h1>Signup</h1>
-        <a href="#" id="signup-login-btn" class="button flipleft">Login</a> 
+        <a href="#" id="signup-login-btn" class="left button flipleft">Login</a> 
+      <a id="signup-submit-btn" href="#" class="button primary">Create</a>
       </div>
       <h2>Want to start keeping track of your expenses? Create an account!</h2>
       <div class="error-msg" id="signup-error"></div>
-      <ul class="edit rounded">
-        <li><input type="text" name="username" placeholder="Your e-mail address" id="signup-username" required></li>
-        <li><input type="text" name="password" placeholder="Password" id="signup-password" required></li>
-        <li><input type="text" name="password2" placeholder="Confirm Password" id="signup-password2" required></li>
-      </ul>
-      <a id="signup-submit-btn" href="#" class="blueButton">Create Account</a>
+      <form name="login" id="login-form" method="post" action="#">
+        <ul class="edit rounded">
+          <li><input type="text" name="username" placeholder="Your e-mail address" id="signup-username" required></li>
+          <li><input type="text" name="password" placeholder="Password" id="signup-password" required></li>
+          <li><input type="text" name="password2" placeholder="Confirm Password" id="signup-password2" required></li>
+        </ul>
+      </form>
     </div>
 
     <div id="add-page" class="edgetoedge form"> 
       <div class="toolbar">
         <h1>Edit Expense</h1>
         <a href="#" id="cancel-btn" class="back button slidedown">Cancel</a>
-        <a href="#" id="save-btn" class="save button">Save</a>
+        <a href="#" id="save-btn" class="save button primary">Save</a>
       </div>
       <div class="error-msg" id="error-msg"></div>
       <form name="update" id="update-expense" method="post" action="#">
